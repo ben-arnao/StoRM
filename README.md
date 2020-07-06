@@ -15,7 +15,9 @@ Recent research has discussed there is not a lot of reproducible evidence that a
 
 # How does this tuner attempt to solve these issues?
 
-This tuner can be thought of as a combination of a restricted grid search combined with random search. The idea behind this tuner is to randomly mutate the best configuration along different axes. The number of mutations made for the next configuration to test, is based on a user-defined probability. This approach allows for the tuner to combine the benefits of fine tuning a configuration for a slow and steady descent, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
+This tuner can be thought of as a combination of a restricted grid search combined with random search. The idea behind this tuner is to randomly mutate the best configuration along different axes. The number of mutations made for the next configuration to test, is based on a user-defined probability. This approach aims to combine the benefits of fine tuning a configuration for a slow and steady descent, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
+
+It also scraps the idea of building some sort of intelligently guided search logic, given the lack of evidence that such even exists.
 
 The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
