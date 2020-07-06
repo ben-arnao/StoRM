@@ -3,23 +3,23 @@ A neural network hyperparameter tuner
 
 # Motivations of this tuner
 
-Neural network hyper parameter optimization is an especially challenging task due to 3 main reasons.
+Neural network hyper parameter optimization is an especially challenging task due to 3 main reasons:
 
-1) Parameters are highly co dependent, arguably on all axes.
+1) Parameters are highly co dependent, along arguably all axes.
 
 2) The search space can be highly convex and intractable.
 
 3) For high-end performance where we need to squeeze as much performance out of our model as possible, the search space can get very large.
 
-Recent research has shown there is not much reproducible evidence that any of today's state of the art techniques significantly beat random search. https://arxiv.org/pdf/1902.07638.pdf
+Recent research has discussed there is not a lot of reproducible evidence that any of today's state of the art techniques significantly beat a plain old random search with some form of early stopping- https://arxiv.org/pdf/1902.07638.pdf
 
 # How does this tuner attempt to solve these issues?
 
-The tuner can be thought of as a combination of a restricted grid search combined with random search. The idea behind this tuner is to mutate the network along different axes and let the user choose how explorative the tuner should be. This approach allows for the tuner to combine the benefits of fine tuning a configuration for a slow and steady descent, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
+This tuner can be thought of as a combination of a restricted grid search combined with random search. The idea behind this tuner is to randomly mutate the best configuration along different axes. The number of mutations made for the next configuration to test, is based on a user-defined probability. This approach allows for the tuner to combine the benefits of fine tuning a configuration for a slow and steady descent, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
 
-The default value ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance, just one mutation will be made. There is a 25% chance 2 mutations will be made. A 12.5% chance that 3 mutations will be made, and so on.
+The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
-My belief is that this tuner provides a good balance in addressing the issues above. Allowing enough freedom so that we do respect the convexness of the search space and co-dependency of variables while also restricting the the probability of hops, so that there is at least some guidance.
+My belief is that this tuner provides a good balance in addressing the issues stated above. Allowing enough freedom so that we do respect the convexness of the search space and co-dependency of variables while also probalistically restricting how "different" the to-be-tested configuration is, from the current best.
 
 # Usage
 
@@ -94,6 +94,6 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
                  randomize_axis_factor=0.5)
 ```
 
-```init_random```: How many iterations to perform random search for. This is helpful for getting the search to an average configuration, so that we don't waste too much time descending from a sub
+```init_random```: How many initial iterations to perform random search for. This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point.
 
 ```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation.
