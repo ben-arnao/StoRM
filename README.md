@@ -3,7 +3,7 @@ A neural network hyper parameter tuner
 
 # Motivations of this tuner
 
-Neural network hyper parameter optimization is a notoriously challenging task due to 3 main reasons.
+Neural network hyper parameter optimization is an esepcially challenging task due to 3 main reasons.
 
 1) Parameters are highly codependant, arguably on all axis.
 
@@ -11,15 +11,15 @@ Neural network hyper parameter optimization is a notoriously challenging task du
 
 3) For high-end performance where we need to squeeze as much performance out of our model as possible, the search space can get very large.
 
-Recent research has shown there is not much strong repoduible evidence that any of today's state of the art techniques, significantly beat random search. https://arxiv.org/pdf/1902.07638.pdf
+Recent research has shown there is not much repoduible evidence that any of today's state of the art techniques significantly beat random search. https://arxiv.org/pdf/1902.07638.pdf
 
 # How does this tuner attempt to solve these issues?
 
-The tuner can be thought of as a combination of a restricted grid search combined with random grid search. The idea behind this tuner is to mutate the network along different axis and let the user choose how explorative the tuner should be. This appaorach allows for the tuner to combine the benefits of fine tuning a configuration for a slow and steady descent, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
+The tuner can be thought of as a combination of a restricted grid search combined with random search. The idea behind this tuner is to mutate the network along different axis and let the user choose how explorative the tuner should be. This appaorach allows for the tuner to combine the benefits of fine tuning a configuration for a slow and steady descent, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
 
-The default value ```randomize_axis_factor``` is 0.5 which means that half of the produces configuration will only be one step different from the best configuration. The chances of mutating the configuration twice will be reduced by 0.5, 
+The default value ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance, just one mutation will be made. There is a 25% chance 2 mutations will be made. A 12.5% chance that 3 mutations will be made, and so on.
 
-My belief is that this tuner provides a good balance of address the issues above. Allowing enough freedom so that we do respect the convexness of the search space and co-dpendacy of variables while also restricting the the probability of hops, so that there is at least some guidance.
+My belief is that this tuner provides a good balance in addressing the issues above. Allowing enough freedom so that we do respect the convexness of the search space and co-dpendacy of variables while also restricting the the probability of hops, so that there is at least some guidance.
 
 # Usage
 
@@ -90,14 +90,10 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
                  project_dir='C:/myProject/',
                  build_fn=build_model,
                  objective_direction='min',
-                 overwrite=False,
-                 max_collisions=100,
-                 floor_decay_factor=0.95,
-                 score_exp=3):
+                 init_random=25,
+                 randomize_axis_factor=0.5)
 ```
 
-```floor_decay_factor```: Determines how quickly the equal probability distribution gives way to the score based weights. Think of this as the "warump" for the tuner to gauge the search space before becoming more exploitative. Ideally the probability floor should drop away as the variance of score averages becomes lower.
+```init_random```: How many iterations to perform random search for. This is helpful for getting the search to an average confgiuration, so that we don't waste too much time descending from a sub
 
-The probability floor ratio starts at 1.0 (purely random) and decays by this value per iteration. A value closer to 1 favors exploration. A value closers to zero favors exploitation. For more convex functions, a higher value is preffered. Suggested value range (0.9 -> 0.99).
-
-```score_exp```: The main exploitative/explorative tradeoff parameter. Determines how much more likely we are to chose a configuration similar to the best set of values. Ie. if a configuration is found that is greatly superior to the rest of the configs that have been tested, the tuner will focus much more tighly on this area. Suggested value range (2 -> 5).
+```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will be steps will be more likely to only do a single mutation.
