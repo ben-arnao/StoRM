@@ -7,7 +7,7 @@ Neural network hyper parameter optimization is an especially challenging task du
 
 1) Parameters are highly codependent, along arguably all axes.
 
-2) The search space can be highly convex and intractable.
+2) The search space can be highly non-convex and intractable.
 
 3) For high-end performance where we need to squeeze as much performance out of our model as possible, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
 
