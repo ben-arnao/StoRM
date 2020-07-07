@@ -21,7 +21,7 @@ It also scraps the idea of building some sort of intelligently guided search log
 
 The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
-My belief is that this tuner provides a good balance in addressing the issues stated above. Allowing enough freedom so that we do respect the convexness of the search space and co-dependency of variables while also probalistically restricting how "different" the to-be-tested configuration is, from the current best to provide some level of guidance to the search.
+My belief is that this tuner provides a good balance in addressing the issues stated above. Allowing enough freedom so that we do respect the non-convexness of the search space and co-dependency of variables, while also probalistically restricting how "different" the to-be-tested configuration is, from the current best, to provide some level of guidance and locality to the search.
 
 # Usage
 
