@@ -25,7 +25,7 @@ My belief is that this tuner provides a good balance in addressing the issues st
 
 # Usage
 
-Here we define our hyper parameter space through providing our own model building method. All we need to do is define our HP space, and return an untrained model. Parameters used at train time can also be defined here. All parameters take the form: ```hp.Choice('parameter_name', [value1, value2...], ordered=False)```. Setting a parameter to ordered=True, will ensure the tuner is only able to select adjacent values per a single mutation step.
+Here we define our hyper parameter space through providing our own model building method. All we need to do is define our HP space, and return an untrained model. Parameters used at train time can also be defined here. All parameters take the form: ```hp.Param('parameter_name', [value1, value2...], ordered=False)```. Setting a parameter to ordered=True, will ensure the tuner is only able to select adjacent values per a single mutation step.
 
 ```python
 def build_model(hp):
@@ -51,7 +51,7 @@ def build_model(hp):
     return model
 ```
 
-We override the ```run_trial()``` method for our own Tuner, this encapsulates all the work of a single trial. All the run_trial method needs to do is assign a score to the trial ```self.score_trial(trial, score)```. How you use your model to make the score for the trial, is up to you (ie. K-fold cross validation). The ```self.hypermodel.build(hp)``` function called in ```run_trial``` is what will supply us with a blank model.
+We override the ```run_trial()``` method for our own Tuner, this encapsulates all the work of a single trial. All the run_trial method needs to do is assign a score to the trial ```self.score_trial(trial, score)```. How you use your model to make the score for the trial, is up to you (ex. K-fold cross validation, trailing average of epoch loss to mitigate variance, etc.). The ```self.hypermodel.build(hp)``` function called in ```run_trial``` is what will supply us with a blank model.
 
 As we can see, any arguments you provide in the ```search()``` entry method, can be accessed in your ```run_trial()``` method.
 
