@@ -17,7 +17,7 @@ Recent research has discussed there is not a lot of reproducible evidence that s
 
 This tuner can be thought of as a combination of a restricted grid search combined with random search. The idea behind this tuner is to randomly mutate the current best configuration along different axes. The number of mutations made for the next configuration to test, is based on a user-defined probability. This approach aims to combine the benefits of fine tuning a configuration for a slow and steady descent in cases where we are near good minima and in cases where the feature set may have some level of independance, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
 
-It also scraps the idea of building some sort of intelligently guided search logic, given the lack of evidence that such a solution even exists.
+All of the points mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why i scrap the idea of building some sort surrogate function and use a method that should converge eventually, and hopefully will converge faster than random search which is really the main goal right now.
 
 The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
