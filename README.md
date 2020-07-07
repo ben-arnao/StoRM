@@ -34,8 +34,6 @@ def build_model(hp):
     # we can define train-time params in the build model function
     hp.Param('batch_size', [32, 64, 128, 256], ordered=True)
     
-    for x in
-
     model.add(Dense(10))
     
     activation_choices = ['tanh', 'softsign', 'selu', 'relu', 'elu', 'softplus']
@@ -99,3 +97,7 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 ```init_random```: How many initial iterations to perform random search for. This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point.
 
 ```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation.
+
+# Other notes/features
+
+-The tuner keep tracks of which parameters are in use by building a dummy model prior to hashing the configuration.  While building the model, parameters the model building function actually draws from are flagged as active. For example, if we have a parameter to determine number of layers to use, if the number of layers is set to 1, parameters only applicable to layer 2+ wil not be included in the hash. This allows us to ensure we never test configurations that are virtually identical. Since testing a configuration is expensive, i believe the upfront cost of building a blank model is far less than by chance testing the same configuration twice.
