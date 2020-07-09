@@ -9,19 +9,19 @@ Neural network hyper parameter optimization is an especially challenging task du
 
 2) The search space can be highly non-convex and intractable.
 
-3) For high-end performance where we need to squeeze as much performance out of our model as possible, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
+3) For high-end performance where we want to make sure we don't miss out on the absolute best model, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
 
 Recent research has discussed there is not a lot of reproducible evidence that show any of today's state of the art techniques significantly beat a plain old random search with some form of early stopping- https://arxiv.org/pdf/1902.07638.pdf
 
 # How does this tuner attempt to solve these issues?
 
-All of the points mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why i scrap the idea of building some sort surrogate function or gradient-based method.
+All of the points mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why i scrap the idea of building some sort surrogate function or gradient-based method and opt to go for something simpler and hopefully better than a random search.
 
-This tuner can be thought of as a combination of a grid search combined with random search. The idea behind this tuner is to randomly mutate the current best configuration along different axes (and sometimes even multiple times along the same axis). The number of mutations made for the next configuration to test, is based on a user-defined probability. This approach aims to combine the benefits of fine tuning a configuration for a slow and steady descent in cases where we are near good minima and in cases where the feature set may have some level of independance, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
+This tuner can be thought of as a combination of a grid search combined with random search where the "distance" between the next evaluation candidate, and the overall best candidate, is probability based. The idea behind this tuner is to randomly mutate the current best configuration along different axes (and sometimes even multiple times along the same axis). The number of mutations made for the next evaluation candidate, is based on a user-defined probability. This approach aims to combine the benefits of tweaking a configuration in cases where we are near good minima and in cases where the feature set may have some level of independance, but also allowing the tuner to have the ability to mutate the model multiple times in one step, so that it can get out of local minima.
 
 The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
-My belief is that this tuner provides a good balance in addressing the issues stated above. Allowing enough freedom so that we do respect the non-convexness of the search space and co-dependency of variables, while also probalistically restricting how "different" the to-be-tested configuration is, from the current best, to provide some level of guidance and locality to the search.
+My belief is that this tuner provides a good balance in addressing the issues stated above. Allowing enough freedom so that we do respect the non-convexness of the search space and co-dependency of variables, while also probalistically restricting how different the next evaluation candidate is from the current best, to provide some level of guidance and locality to the search.
 
 # Usage
 
