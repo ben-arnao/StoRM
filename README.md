@@ -5,7 +5,7 @@ A neural network hyperparameter tuner
 
 Neural network hyper parameter optimization is an especially challenging task due to 3 main reasons:
 
-1) Parameters are highly codependent, along arguably all axes.
+1) Parameters are highly codependent.
 
 2) The search space can be highly non-convex and intractable.
 
@@ -15,9 +15,9 @@ Recent research has discussed there is not a lot of reproducible evidence that s
 
 # How does this tuner attempt to solve these issues?
 
-This tuner can be thought of as a combination of a restricted grid search combined with random search. The idea behind this tuner is to randomly mutate the current best configuration along different axes. The number of mutations made for the next configuration to test, is based on a user-defined probability. This approach aims to combine the benefits of fine tuning a configuration for a slow and steady descent in cases where we are near good minima and in cases where the feature set may have some level of independance, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
+All of the points mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why i scrap the idea of building some sort surrogate function or gradient-based method.
 
-All of the points mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why i scrap the idea of building some sort surrogate search function and use a SGD-like method that i believe will provide a better search than random search. (I will run tests shortly to provide comparisons between this tuner and random search).
+This tuner can be thought of as a combination of a grid search combined with random search. The idea behind this tuner is to randomly mutate the current best configuration along different axes (and sometimes even multiple times along the same axis). The number of mutations made for the next configuration to test, is based on a user-defined probability. This approach aims to combine the benefits of fine tuning a configuration for a slow and steady descent in cases where we are near good minima and in cases where the feature set may have some level of independance, but also allowing the tuner to have the freedom to mutate the network multiple times in one step, so that it can get out of local minima.
 
 The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
@@ -101,3 +101,4 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 # Other notes/features
 
 -The tuner keep tracks of which parameters are in use by building a dummy model prior to hashing the configuration. When building the model, parameters the model building function actually draws from are flagged as active. For example, if we have a parameter to determine number of layers to use, if the number of layers is set to 1, parameters only applicable to layer 2+ wil not be included in the hash. This allows us to ensure we never test configurations that are virtually identical. Since testing a configuration is expensive, i believe the upfront cost of building a blank model is far less than by chance testing the same configuration twice.
+-Tests coming shortly to provide comparisons between this tuner and random search
