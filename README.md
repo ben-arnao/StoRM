@@ -1,5 +1,5 @@
 # stochasticmutatortuner
-A hyperparameter tuner for intractable optimization problems (Neural Network)
+A hyperparameter tuner for high-dimensional, categorical-parametered, intractable optimization problems (Neural Network)
 
 # Motivations of this tuner
 
