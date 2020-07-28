@@ -23,9 +23,12 @@ class Tuner:
                  randomize_axis_factor=0.5,
                  init_random=25,
                  objective_direction='max',
-                 overwrite=False):
+                 overwrite=False,
+                 max_iters=1000):
 
         self.project_dir = project_dir
+
+        self.max_iters = max_iters
 
         self.objective_direction = objective_direction
         self.hypermodel = HyperModel(build_fn)
@@ -71,8 +74,11 @@ class Tuner:
     def search(self, *args):
         print('\n-------- OPTIMIZING HYPERPARAMETERS --------\n')
         while True:
+            if len(self.trials) > self.max_iters:
+                print('tuner finished')
+                break
             trial = self._create_trial()
-            display_hps(trial.hyperparameters)
+            # display_hps(trial.hyperparameters)
             self.run_trial(trial, *args)
             self._on_trial_end(trial)
 
@@ -114,8 +120,8 @@ class Tuner:
         print('<><><> NEW BEST! <><><>')
         display_hps(trial.hyperparameters)
 
-        # dump the best config
-        pickle.dump(trial.hyperparameters, open(self.project_dir + '/best_hps.p', "wb"))
+    def get_best_hps(self):
+        return self.get_best_config()
 
     def _trial_is_new_best(self, trial):
         if self.objective_direction == 'max':
@@ -191,7 +197,7 @@ class Tuner:
         return param_hash
 
     def _draw_config(self):
-        # do random configs for X user defines iters
+        # do random configs for X user defined iters
         if len(self.trials) < self.init_random:
             self._complete_random()
             param_hash = self._hash_active_params()
@@ -199,17 +205,15 @@ class Tuner:
 
         # copy the best set of hps
         self.hyperparameters = self.get_best_config().copy()
+
         self._randomize_inactive()
 
-        # mutate params
-        while True:
+        while True:  # mutate params
             # get a random parameter to be mutated
             mod_param = random.choice(list(self.hyperparameters.values.keys()))
 
-            # if chosen param does not exist in space skip (shouldn't need this, not sure why i have to have this
-            # yet tuner seems to work fine anyway)
             if mod_param not in self.hyperparameters.space:
-                continue
+                raise Exception('HP not yet in space...', mod_param)
 
             # the parameter is set as 'ordered', only select an adjacent option.
             if self.hyperparameters.space[mod_param].ordered:
@@ -222,8 +226,8 @@ class Tuner:
                     new_ind = curr_ind + 1
                 elif curr_ind == len(self.hyperparameters.space[mod_param].values) - 1:
                     new_ind = curr_ind - 1
-                else:
-                    # randomly select value up or down
+
+                else:  # randomly select value up or down
                     if bool(random.getrandbits(1)):
                         new_ind = curr_ind - 1
                     else:
@@ -274,8 +278,7 @@ class Tuner:
             return None
         return bt.hyperparameters
 
-    # probes a specific configuration given a HyperParameters object
-    def probe(self, hps, *args):
+    def probe(self, hps, *args):  # probes a specific configuration given a HyperParameters object
         self.hyperparameters.values = hps.values
         self.hyperparameters.active_params = set()
         self.hypermodel.build(self.hyperparameters)
@@ -313,11 +316,9 @@ class HyperModel:
 class Param:
     def __init__(self,
                  values,
-                 ordered,
-                 default):
+                 ordered):
         self.values = values
         self.ordered = ordered
-        self.default = default
 
 
 class HyperParameters:
@@ -346,50 +347,13 @@ class HyperParameters:
         s = ''.join(str(k) + '=' + str(values[k]) for k in keys)
         return hashlib.sha256(s.encode('utf-8')).hexdigest()[:32]
 
-    def _retrieve(self,
-                  name,
-                  values,
-                  ordered,
-                  default):
-        self.active_params.add(name)
-        return self._retrieve_helper(name,
-                                     values,
-                                     ordered,
-                                     default)
-
-    def _retrieve_helper(self,
-                         name,
-                         values,
-                         ordered,
-                         default):
-        if name in self.values:
-            return self.values[name]
-        else:
-            return self._register(name,
-                                  values,
-                                  ordered,
-                                  default)
-
-    def _register(self,
-                  name,
-                  values,
-                  ordered,
-                  default):
-        self.space[name] = Param(values,
-                                 ordered,
-                                 default)
-        if default is not None:
-            self.values[name] = default
-        else:
-            self.values[name] = random.choice(values)
-        return self.values[name]
-
     def Param(self,
               name,
               values,
-              ordered=False,
-              default=None):
-        return self._retrieve(name,
-                              values,
-                              ordered,
-                              default)
+              ordered=False):
+        # retrieve param
+        self.active_params.add(name)  # mark param as active
+        if name not in self.values or name not in self.space:
+            self.space[name] = Param(values, ordered)  # register param
+            self.values[name] = random.choice(values)
+        return self.values[name]
