@@ -15,7 +15,7 @@ Recent research has discussed there is not a lot of reproducible evidence that s
 
 # How does this tuner attempt to solve these issues?
 
-All of the points mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why i scrap the idea of building some sort surrogate function or gradient-based method to model high probability areas and opt to go for something simpler and hopefully more robust to the problems we're facing.
+All of the points mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why this tuner opts against attempting to build some sort surrogate function or gradient-based method to model the probability of the search space, and instead aims for something simpler and hopefully more robust to the problems we're facing.
 
 This tuner can be thought of as a combination of a grid search combined with random search, where the "distance" between the next evaluation candidate, and the overall best candidate, is probability based. The idea behind this tuner is to randomly mutate the current best configuration along different axes (and sometimes even multiple times along the same axis). The number of mutations made for the next evaluation candidate, is based on a user-defined probability. This approach aims to combine the benefits of tweaking a configuration in cases where we are near good minima and in cases where the feature set may have some level of independance, but also allowing the tuner to have the ability to mutate the model multiple times in one step, so that it can get out of local minima.
 
