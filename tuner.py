@@ -142,16 +142,19 @@ class Tuner:
         # print/log whatever you want to here
         print(len(self.score_history),
               '| score:', round(trial.score, 8) if not np.isnan(trial.score) else None,
-              '| changed count:', self._params_changed_from_best(trial))
+              '| changed:', len(self._params_changed_from_best(trial)))
 
     def run_trial(self, trial, *args):
         raise NotImplementedError
 
     # useful for seeing how many axis the configuration has changed from the best config
     def _params_changed_from_best(self, trial):
-        if len(self.trials) == 1:
-            return 0
+        if len(self.trials) <= 1:
+            return []
         best_trial = self.get_best_trial()
+
+        if best_trial is None:
+            return []
 
         # if current trial is the best trial (new best found), return the last best trial to compare to
         if trial.score == best_trial.score:
@@ -159,17 +162,17 @@ class Tuner:
 
         # if this is first trial, there is no best yet
         if best_trial is None:
-            return 0
+            return []
 
         best_params = {param: best_trial.hyperparameters.values[param]
                        for param in best_trial.hyperparameters.active_params}
         curr_params = {param: trial.hyperparameters.values[param]
                        for param in trial.hyperparameters.active_params}
 
-        changed = 0
+        changed = []
         for param in best_params.keys():
             if param not in curr_params.keys() or best_params[param] != curr_params[param]:
-                changed += 1
+                changed.append(param)
         return changed
 
     # completely randomize parameters not in use. This is useful to ensure when we activate an unused param,
@@ -198,9 +201,12 @@ class Tuner:
 
     def _draw_config(self):
         # do random configs for X user defined iters
-        if len(self.trials) < self.init_random:
+        if len(self.score_history) < self.init_random:
             self._complete_random()
             param_hash = self._hash_active_params()
+            while param_hash in self._tried_so_far:
+                self._complete_random()
+                param_hash = self._hash_active_params()
             return param_hash
 
         # copy the best set of hps
@@ -255,7 +261,7 @@ class Tuner:
 
     def score_trial(self, trial, trial_value):
         if trial_value is None:
-            trial = np.nan
+            trial_value = np.nan
         trial.score = trial_value
         self.trials.append(trial)
 
@@ -269,7 +275,10 @@ class Tuner:
             return None
         else:
             if next_best:
-                return sorted_trials[1]
+                if len(sorted_trials) > 1:
+                    return sorted_trials[1]
+                else:
+                    return None
             return sorted_trials[0]
 
     def get_best_config(self):
@@ -278,8 +287,8 @@ class Tuner:
             return None
         return bt.hyperparameters
 
-    def probe(self, hps, *args):  # probes a specific configuration given a HyperParameters object
-        self.hyperparameters.values = hps.values
+    def probe(self, hp_values, *args):  # probes a specific configuration given a HyperParameters object
+        self.hyperparameters.values = hp_values
         self.hyperparameters.active_params = set()
         self.hypermodel.build(self.hyperparameters)
         display_hps(self.hyperparameters)
