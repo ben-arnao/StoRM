@@ -5,9 +5,9 @@ A hyperparameter tuner for high-dimensional, categorical-parametered, intractabl
 
 Neural network hyper parameter optimization is an especially challenging task due to 3 main reasons:
 
-1) Parameters are highly codependent.
+1) Parameters are highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you might have to adjust multiple parameters at once to escape local maxima/minima.
 
-2) The search space can be highly non-convex and intractable.
+2) The search space can be highly non-convex and intractable, with many categorical/discrete/boolean parameters. This sort of noisy target landscape makes it very tough to search efficiently.
 
 3) For high-end performance where we want to make sure we don't miss out on the absolute best model, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
 
