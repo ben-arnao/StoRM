@@ -8,14 +8,16 @@ from tuner import Tuner
 def build_model(hp):
     model = Sequential()
 
+    # example of model-wide unordered categorical parameter
+    activation_fn = hp.Param('activation', ['relu', 'tanh', 'elu'])
+
     # example of inline ordered parameter
     for x in range(hp.Param('num_layers', [1, 2, 3, 4, 5], ordered=True)):
 
         # example of per-block parameter
         model.add(Dense(hp.Param('kernel_size_' + str(x), [64, 128, 256], ordered=True)))
 
-        # example of unordered categorical parameter
-        model.add(Activation(hp.Param('activation', ['relu', 'tanh', 'elu'])))
+        model.add(Activation(activation_fn))
 
         # example of boolean param
         if hp.Param('use_batch_norm', [True, False]):
@@ -40,13 +42,12 @@ def build_model(hp):
 
 def custom_score_function(x_train, y_train, model, batch_size):
     history = model.fit(x_train, y_train, epochs=25, batch_size=batch_size, verbose=2)
-    # here we can defined custom logic to assign a score to a configuration provided
+    # here we can defined custom logic to assign a score to a configuration
     return np.mean(history.history['loss'][-5:])
 
 
 class MyTuner(Tuner):
-    
-    # define your trial
+
     def run_trial(self, trial, *args):
         x_train = args[0]
         y_train = args[1]
@@ -64,7 +65,6 @@ class MyTuner(Tuner):
         self.score_trial(trial, score)
 
 
-# define the tuner
 tuner = MyTuner(project_dir='C:/TestProject',
                 build_fn=build_model,
                 objective_direction='min',
