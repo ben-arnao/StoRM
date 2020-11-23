@@ -2,7 +2,7 @@ from tensorflow import keras
 import numpy as np
 from tensorflow.keras.layers import Dense, Dropout, BatchNormalization, Activation
 from tensorflow.keras.models import Sequential
-from tradingbot.trainer.tuner import Tuner
+from tuner import Tuner
 
 
 (x_train, y_train), _ = keras.datasets.mnist.load_data()
