@@ -5,10 +5,6 @@ from tensorflow.keras.models import Sequential
 from tuner import Tuner
 
 
-(x_train, y_train), _ = keras.datasets.mnist.load_data()
-x_train = np.reshape(x_train, (-1, 784))
-
-
 def build_model(hp):
     model = Sequential()
 
@@ -44,12 +40,13 @@ def build_model(hp):
 
 def custom_score_function(x_train, y_train, model, batch_size):
     history = model.fit(x_train, y_train, epochs=25, batch_size=batch_size, verbose=2)
-    # here we can defined custom logic to assign a score to a configuration
+    # here we can defined custom logic to assign a score to a configuration provided
     return np.mean(history.history['loss'][-5:])
 
 
 class MyTuner(Tuner):
-
+    
+    # define your trial
     def run_trial(self, trial, *args):
         x_train = args[0]
         y_train = args[1]
@@ -67,12 +64,16 @@ class MyTuner(Tuner):
         self.score_trial(trial, score)
 
 
+# define the tuner
 tuner = MyTuner(project_dir='C:/TestProject',
                 build_fn=build_model,
                 objective_direction='min',
                 init_random=5,
                 randomize_axis_factor=0.5,
                 overwrite=False)
+
+(x_train, y_train), _ = keras.datasets.mnist.load_data()
+x_train = np.reshape(x_train, (-1, 784))
 
 # parameters passed through 'search' go directly to the 'run_trial' method
 tuner.search(x_train, y_train)
