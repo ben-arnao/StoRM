@@ -3,13 +3,15 @@ A hyperparameter tuner for high-dimensional, categorical-parametered, intractabl
 
 # Motivations of this tuner
 
-Neural network hyper parameter optimization is an especially challenging task due to 3 main reasons:
+Neural network hyper parameter optimization is an especially challenging task due to a few reasons:
 
 1) Parameters are highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you might have to adjust multiple parameters at once to escape local maxima/minima.
 
-2) The search space can be highly non-convex and intractable, with many categorical/discrete/boolean parameters. This sort of noisy target landscape makes it very tough to search efficiently.
+2) The search space can be highly non-convex and intractable, with many categorical/discrete/boolean/nested parameters. This sort of search landscape makes it very tough to generate any sort of quantitative probability model.
 
-3) For high-end performance where we want to make sure we don't miss out on the absolute best model, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
+We might also run into a scenario where tuning a parameter will have very poor or very good results depending on what parameters are tuned with it, so attempting to model which parameters are more likely to be better will require a lot of trials to overcome this level of variance. Even then, the best parameter on average will not always be the parameter of the global minima.
+
+3) For high-end performance where local minima is not good enough and we want to ensure we consider many combinations of hyperparameters, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
 
 Recent research has discussed there is not a lot of reproducible evidence that show any of today's state of the art techniques significantly beat a plain old random search with some form of early stopping- https://arxiv.org/pdf/1902.07638.pdf
 
@@ -25,7 +27,7 @@ My belief is that this tuner provides a good balance in addressing the issues st
 
 # Usage
 
-Here we define our hyper parameter space through providing our own model building method. All we need to do is define our HP space, and return an untrained model. Parameters used at train time can also be defined here. All parameters take the form: ```hp.Param('parameter_name', [value1, value2...], ordered=False)```. Setting a parameter to ordered=True, will ensure the tuner is only able to select adjacent values per a single mutation step.
+Here we define our hyper parameter space through providing our own model building method. All we need to do is define our HP space, and return an untrained model. Parameters used at train time can also be defined here. All parameters take the form: ```hp.Param('parameter_name', [value1, value2...], ordered=False)```. Setting a parameter to ```ordered=True```, will ensure the tuner is only able to select adjacent values per a single mutation step. This is an important feature for parameters where there is ordinality.
 
 ```python
 def build_model(hp):
@@ -49,7 +51,11 @@ def build_model(hp):
     return model
 ```
 
-We override the ```run_trial()``` method for our own Tuner, this encapsulates all the work of a single trial. All the run_trial method needs to do is assign a score to the trial ```self.score_trial(trial, score)```. How you use your model to make the score for the trial, is up to you (ex. K-fold cross validation, trailing average of epoch loss to mitigate variance, etc.). The ```self.hypermodel.build(hp)``` function called in ```run_trial``` is what will supply us with a blank model.
+We override the ```run_trial()``` method for our own Tuner, this encapsulates all the work of a single trial. All the run_trial method needs to do is assign a score to the trial ```self.score_trial(trial, score)```. How you use your model to make the score for the trial, is up to you (ex. K-fold cross validation, trailing average of epoch loss to mitigate variance, etc.).
+
+One may even decide to do some form of bandit search here, where they abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. It is important to keep in mind that we only care if the model we are testing beats the best model, the tuner does not particularly care about exactly how much a losing trial lost by.
+
+The ```self.hypermodel.build(hp)``` function called in ```run_trial``` is what will supply us with a blank model.
 
 As we can see, any arguments you provide in the ```search()``` entry method, can be accessed in your ```run_trial()``` method.
 
@@ -101,4 +107,7 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 # Other notes/features
 
 -The tuner keep tracks of which parameters are in use by building a dummy model prior to hashing the configuration. When building the model, parameters the model building function actually draws from are flagged as active. For example, if we have a parameter to determine number of layers to use, if the number of layers is set to 1, parameters only applicable to layer 2+ will not be included in the hash. This allows us to ensure we never test configurations that are virtually identical. Since testing a configuration is expensive, i believe the upfront cost of just building a blank model is far less than by chance testing the same configuration twice.
+
 -Tests coming shortly to provide comparisons between this tuner and random search
+
+-This tuner does incorporate the ability to log and retrieve various metrics of the trial (for example, the number of epochs trained when doing some sort of early stopping or any other supplementary metrics you may want to analyze later).
