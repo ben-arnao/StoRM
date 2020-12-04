@@ -5,13 +5,13 @@ A hyperparameter tuner for high-dimensional, categorical-parametered, intractabl
 
 Neural network hyper parameter optimization is an especially challenging task due to a few reasons:
 
-1) Parameters are highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you might have to adjust multiple parameters at once to escape local maxima/minima.
+1) Parameters are highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you might have to adjust many parameters at once to escape local maxima/minima.
 
-2) The search space can be highly non-convex and intractable, with many categorical/discrete/boolean/nested parameters. This sort of search landscape makes it very tough to generate any sort of quantitative probability model.
+2) The search space can be highly non-convex and intractable, with many categorical/discrete/boolean/nested parameters. This sort of search conditional and nominal landscape makes it very tough to generate any sort of quantitative probability model.
 
-We might also run into a scenario where tuning a parameter will have very poor or very good results depending on what parameters are tuned with it, so attempting to model which parameters are more likely to be better will require a lot of trials to overcome this level of variance. Even then, the best parameter on average will not always be the parameter of the global minima.
+We might also run into a scenario where tuning a parameter will have very poor or very good results depending on what parameters are tuned with it, so attempting to model which parameters are more likely to be better will require a lot of trials to overcome this level of variance. Even then, the best parameter on average will not always be the parameter of configurations near global minima.
 
-3) For high-end performance where local minima is not good enough and we want to ensure we consider many combinations of hyperparameters, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
+3) For high-end performance where local minima is not good enough and we want a granular and broad search, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
 
 Recent research has discussed there is not a lot of reproducible evidence that show any of today's state of the art techniques significantly beat a plain old random search with some form of early stopping- https://arxiv.org/pdf/1902.07638.pdf
 
@@ -51,7 +51,7 @@ def build_model(hp):
     return model
 ```
 
-We override the ```run_trial()``` method for our own Tuner, this encapsulates all the work of a single trial. All the run_trial method needs to do is assign a score to the trial ```self.score_trial(trial, score)```. How you use your model to make the score for the trial, is up to you (ex. K-fold cross validation, trailing average of epoch loss to mitigate variance, etc.).
+We override the ```run_trial()``` method for our own Tuner, this encapsulates all the work of a single trial. All the ```run_trial``` method needs to do is assign a score to the trial ```self.score_trial(trial, score)```. How you use the supplied configuration to make the score for the trial, is up to you (ex. K-fold cross validation, trailing average of epoch loss to mitigate variance, etc.).
 
 One may even decide to do some form of bandit search here, where they abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. It is important to keep in mind that we only care if the model we are testing beats the best model, the tuner does not particularly care about exactly how much a losing trial lost by.
 
@@ -102,7 +102,7 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 
 ```init_random```: How many initial iterations to perform random search for. This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point.
 
-```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation.
+```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases, although for problems where you expect a large degree of parameter independance you may move the value closer to 0 and likewise for problems where you expect a great degree of parameter co-dependence you may set the value closer to 1.
 
 # Other notes/features
 
@@ -110,4 +110,4 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 
 -Tests coming shortly to provide comparisons between this tuner and random search
 
--This tuner does incorporate the ability to log and retrieve various metrics of the trial (for example, the number of epochs trained when doing some sort of early stopping or any other supplementary metrics you may want to analyze later).
+-This tuner does also incorporate the ability to log and retrieve various metrics of the trial (for example, the number of epochs trained when doing some sort of early stopping or any other supplementary metrics you may want to analyze later).
