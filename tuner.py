@@ -54,7 +54,7 @@ class Tuner:
             print('no valid trial scores recorded yet')
             return
 
-        print(len(self.trials), 'trials loaded!')
+        print(len(self.trials), 'trials loaded! (', len(self.score_history), 'valid trials )')
         if self.objective_direction == 'max':
             score_to_beat = max(self.score_history)
         else:
@@ -90,38 +90,30 @@ class Tuner:
 
     @property
     def _trials_path(self):
-        return self.project_dir + '/trials.p'
+        return os.path.join(self.project_dir, 'trials.p')
 
     def _on_trial_end(self, trial):
         self.save()
         self.report_trial(trial)
 
-    def retrieve_trial_metric(self, metric, only_last=True):
+    def retrieve_trial_metric(self, metric, include_missing=False):
         arr = []
         has_value = False
         for trial in self.trials:
             if metric in trial.metrics.keys():
                 arr.append(trial.metrics[metric])
                 has_value = True
-            else:
+            elif include_missing:
                 arr.append(None)
         if has_value:
-            if only_last:
-                if arr[-1] is not None:
-                    return arr[-1]
-                else:
-                    raise KeyError(metric + str(' does not exist in current trial metrics'))
-            else:
-                return arr
-        else:
-            raise KeyError(metric + str(' does not exist in any trial metrics'))
+            return arr
+        raise KeyError(metric + str(' does not exist in any trial metrics'))
 
-    def _handle_win(self, trial):
-        print('<><><> NEW BEST! <><><>')
-        display_hps(trial.hyperparameters)
-
-    def get_best_hps(self):
-        return self.get_best_config()
+    def get_best_config(self):
+        bt = self.get_best_trial()
+        if bt is None:
+            return None
+        return bt.hyperparameters
 
     def _trial_is_new_best(self, trial):
         if self.objective_direction == 'max':
@@ -129,26 +121,31 @@ class Tuner:
         else:
             return min(self.score_history) == trial.score
 
-    def avg_minutes_per_trial(self, trailing_window_len):
-        return round(np.mean(self.retrieve_trial_metric('elapsed', only_last=False)
-                             [-trailing_window_len:]) / 60.0, 2)
+    def reset(self):
+        self.trials = []
+        print('\ntuner reset')
+
+    def reset_and_probe_prev_best(self):
+        best_conf = self.get_best_config()
+        self.reset()
+        self.probe(best_conf.values)
 
     # just a method called after each trial to report the status of the tuner
     def report_trial(self, trial):
         # handle finding new best config
         if not np.isnan(trial.score) and (len(self.score_history) == 0 or self._trial_is_new_best(trial)):
-            self._handle_win(trial)
+            print('<><><> NEW BEST! <><><>')
+            display_hps(trial.hyperparameters)
 
         # print/log whatever you want to here
         print(len(self.score_history),
-              '| score:', round(trial.score, 8) if not np.isnan(trial.score) else None,
-              '| changed:', len(self._params_changed_from_best(trial)))
+              '| score:', round(trial.score, 8) if not np.isnan(trial.score) else None)
 
     def run_trial(self, trial, *args):
         raise NotImplementedError
 
     # useful for seeing how many axis the configuration has changed from the best config
-    def _params_changed_from_best(self, trial):
+    def _params_changhed_from_best(self, trial):
         if len(self.trials) <= 1:
             return []
         best_trial = self.get_best_trial()
@@ -176,7 +173,7 @@ class Tuner:
         return changed
 
     # completely randomize parameters not in use. This is useful to ensure when we activate an unused param,
-    # it is not baised towards any particular value
+    # it is not biased towards any particular value
     def _randomize_inactive(self):
         for param in self.hyperparameters.values.keys():
             if param not in self.hyperparameters.space:
@@ -238,7 +235,6 @@ class Tuner:
                         new_ind = curr_ind - 1
                     else:
                         new_ind = curr_ind + 1
-
                 self.hyperparameters.values[mod_param] = self.hyperparameters.space[mod_param].values[new_ind]
             else:  # for unordered params, just choose a random value
                 self.hyperparameters.values[mod_param] = random.choice(self.hyperparameters.space[mod_param].values)
@@ -259,11 +255,19 @@ class Tuner:
         param_hash = self._draw_config()
         return Trial(self.hyperparameters, param_hash)
 
+    def add_param_value(self, param_name, param_value):
+        if param_value not in self.get_best_config().space[param_name].values:
+            self.get_best_config().space[param_name].values.append(param_value)
+
     def score_trial(self, trial, trial_value):
         if trial_value is None:
             trial_value = np.nan
         trial.score = trial_value
-        self.trials.append(trial)
+        self.add_trial(trial)
+
+    def add_trial(self, trial):
+        if trial.trial_id not in [trial.trial_id for trial in self.trials]:
+            self.trials.append(trial)
 
     def get_best_trial(self, next_best=False):
         sorted_trials = sorted(
@@ -281,33 +285,46 @@ class Tuner:
                     return None
             return sorted_trials[0]
 
-    def get_best_config(self):
-        bt = self.get_best_trial()
-        if bt is None:
-            return None
-        return bt.hyperparameters
-
     def probe(self, hp_values, *args):  # probes a specific configuration given a HyperParameters object
         self.hyperparameters.values = hp_values
         self.hyperparameters.active_params = set()
         self.hypermodel.build(self.hyperparameters)
-        display_hps(self.hyperparameters)
         param_hash = self.hyperparameters.compute_values_hash()
         if param_hash in self._tried_so_far:
             print('tried this config already...')
-            return
+            return self.get_trial_by_id(param_hash)
+        print('probing config...')
+        display_hps(self.hyperparameters)
         trial = Trial(self.hyperparameters, param_hash)
         start = time.time()
         self.run_trial(trial, *args)
         trial.metrics['elapsed'] = time.time() - start
         self._on_trial_end(trial)
 
+    def get_trial_by_id(self, id):
+        for trial in self.trials:
+            if trial.trial_id == id:
+                return trial
+        else:
+            raise Exception('could not find a trial with id: ' + str(id))
+
+    def get_trial_by_config(self, config):
+        self.hyperparameters.values = config
+        self.hyperparameters.active_params = set()
+        self.hypermodel.build(self.hyperparameters)
+        param_hash = self.hyperparameters.compute_values_hash()
+        for trial in self.trials:
+            if trial.trial_id == param_hash:
+                return trial
+        else:
+            raise Exception('could not find a trial with id: ' + str(id))
+
 
 class Trial:
     def __init__(self, hyperparameters, param_hash):
         self.hyperparameters = hyperparameters.copy()
         self.trial_id = param_hash
-        self.score = None
+        self.score = np.nan
         self.metrics = {}
 
     def _recalculate_hash(self):
@@ -360,9 +377,8 @@ class HyperParameters:
               name,
               values,
               ordered=False):
-        # retrieve param
         self.active_params.add(name)  # mark param as active
         if name not in self.values or name not in self.space:
             self.space[name] = Param(values, ordered)  # register param
             self.values[name] = random.choice(values)
-        return self.values[name]
+        return self.values[name]  # retrieve param
