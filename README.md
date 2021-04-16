@@ -1,4 +1,4 @@
-# stochasticmutatortuner
+# StoRM (Stochastic Random Mutator)
 A hyperparameter tuner for high-dimensional, categorical-parametered, intractable optimization problems (Neural Network)
 
 # Motivations of this tuner
