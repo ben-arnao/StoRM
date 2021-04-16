@@ -25,6 +25,10 @@ The default value for ```randomize_axis_factor``` is 0.5 which means that there 
 
 My belief is that this tuner provides a good balance in addressing the issues stated above. Allowing enough freedom so that we do respect the non-convexness of the search space and co-dependency of variables, while also probalistically restricting how different the next evaluation candidate is from the current best, to provide some level of guidance and locality to the search.
 
+# Installation
+
+```pip storm-tuner```
+
 # Usage
 
 Here we define our hyper parameter space through providing our own model building method. All we need to do is define our HP space, and return an untrained model. Parameters used at train time can also be defined here. All parameters take the form: ```hp.Param('parameter_name', [value1, value2...], ordered=False)```. Setting a parameter to ```ordered=True```, will ensure the tuner is only able to select adjacent values per a single mutation step. This is an important feature for parameters where there is ordinality.
