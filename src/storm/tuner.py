@@ -75,7 +75,7 @@ class Tuner:
     def search(self, *args):
         print('\n-------- OPTIMIZING HYPERPARAMETERS --------\n')
         while True:
-            if len(self.trials) > self.max_iters:
+            if len(self.trials) >= self.max_iters:
                 print('tuner finished')
                 break
             trial = self._create_trial()
@@ -146,7 +146,7 @@ class Tuner:
         raise NotImplementedError
 
     # useful for seeing how many axis the configuration has changed from the best config
-    def _params_changhed_from_best(self, trial):
+    def _params_changed_from_best(self, trial):
         if len(self.trials) <= 1:
             return []
         best_trial = self.get_best_trial()
