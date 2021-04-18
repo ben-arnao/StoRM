@@ -111,3 +111,14 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 # Other notes/features
 
 The tuner keep tracks of which parameters are in use by building a dummy model prior to hashing the configuration. When building the model, parameters the model building function actually draws from are flagged as active. For example, if we have a parameter to determine number of layers to use, if the number of layers is set to 1, parameters only applicable to layer 2+ will not be included in the hash. This allows us to ensure we never test configurations that are virtually identical. Since testing a configuration is expensive, i believe the upfront cost of just building a blank model is far less than by chance testing the same configuration twice.
+
+# Performance
+
+Run ```compare_to_random_search.py``` to compare performance to random search.
+
+Here we can see that over ten trials, StoRM has a clear advantage...
+
+```tuned scores mean: 0.0013418583347811364 | stdev: 0.001806810901973602
+random scores mean: 0.010490878883283586 | stdev: 0.006145158964894091```
+
+
