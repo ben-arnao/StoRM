@@ -7,6 +7,7 @@ import time
 
 import numpy as np
 
+random.seed(42)
 
 def display_hps(hyperparameters):
     params = list(hyperparameters.active_params)
