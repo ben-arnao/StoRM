@@ -27,7 +27,7 @@ This approach aims to provide a good balance to address the issues stated above.
 
 # Installation
 
-```pip storm-tuner```
+```pip install storm-tuner```
 
 # Usage
 
