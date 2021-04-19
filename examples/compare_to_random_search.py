@@ -64,8 +64,8 @@ for x in range(trials_per_mode):
                         objective_direction='min',
                         init_random=5 if mode == 'tune' else iters_per_trial,
                         randomize_axis_factor=0.5,
-                        verbose=False,
-                        max_iters=iters_per_trial)
+                        max_iters=iters_per_trial,
+                        overwrite=True)
 
         tuner.search(x_train, y_train)
 
