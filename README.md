@@ -75,7 +75,7 @@ def get_model_score(model, params, X_train, y_train, X_test, y_test):
                         batch_size=params['batch_size'])
     return history.history['val_loss'][-1]
 
-from tuner import Tuner
+from storm.tuner import Tuner
 
 class MyTuner(Tuner):
 
@@ -90,7 +90,7 @@ class MyTuner(Tuner):
 We initialize our Tuner and provide our training data
 
 ```python
-tuner = MyTuner(project_dir='C:/myProject', objective_direction='min', build_fn=build_model)
+tuner = MyTuner(objective_direction='min', build_fn=build_model)
 tuner.search(X_train, y_train, X_test, y_test)
 ```
 
