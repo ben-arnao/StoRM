@@ -4,6 +4,7 @@ import pickle
 import hashlib
 import random
 import numpy as np
+from pathlib import Path
 
 random.seed(42)
 
@@ -19,7 +20,12 @@ class Tuner:
                  overwrite=False,
                  max_iters=1000):
 
-        self.project_dir = project_dir
+        if project_dir:
+            self.project_dir = project_dir
+        else:
+            self.project_dir = os.path.join('storm-tuner-default-project')
+
+        Path(self.project_dir).mkdir(parents=True, exist_ok=True)
 
         self.max_iters = max_iters
 
