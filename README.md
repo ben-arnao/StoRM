@@ -75,7 +75,9 @@ def get_model_score(model, params, X_train, y_train, X_test, y_test):
                         batch_size=params['batch_size'])
     return history.history['val_loss'][-1]
 
-class MyTuner(tuner.engine.tuner.Tuner):
+from tuner import Tuner
+
+class MyTuner(Tuner):
 
     def run_trial(self, trial, *args):
         hp = trial.hyperparameters
