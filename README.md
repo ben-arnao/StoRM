@@ -120,7 +120,7 @@ The tuner keep tracks of which parameters are in use by building a dummy model p
 
 # Performance
 
-Run ```compare_to_random_search.py``` from examples to compare performance to random search.
+Run ```compare_to_random_search.py``` from ```examples``` directory to compare performance to random search for yourself.
 
 Here we can see that over ten trials each, StoRM has a clear advantage.
 
