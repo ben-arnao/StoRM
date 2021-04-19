@@ -33,6 +33,8 @@ This approach aims to provide a good balance to address the issues stated above.
 
 Here we define our hyper parameter space through providing our own model building method. All we need to do is define our HP space, and return an untrained model. Parameters used at train time can also be defined here. All parameters take the form: ```hp.Param('parameter_name', [value1, value2...], ordered=False)```. Setting a parameter to ```ordered=True```, will ensure the tuner is only able to select adjacent values per a single mutation step. This is an important feature for parameters where there is ordinality.
 
+*Keep in mind that your configuration building method does not necessarily need to return a model. There are two ways to use a parameter. You can define and use parameters inline like shown below, however you may also define parameters in the builder function but access parameters after running build_model() as well.
+
 ```python
 def build_model(hp):
     model = Sequential()
@@ -57,7 +59,7 @@ def build_model(hp):
 
 We override the ```run_trial()``` method for our own Tuner, this encapsulates all the work of a single trial. All the ```run_trial``` method needs to do is assign a score to the trial ```self.score_trial(trial, score)```. How you use the supplied configuration to make the score for the trial, is up to you (ex. K-fold cross validation, trailing average of epoch loss to mitigate variance, etc.).
 
-One may even decide to do some form of bandit search here, where they abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. It is important to keep in mind that we only care if the model we are testing beats the best model, the tuner does not particularly care about exactly how much a losing trial lost by.
+One may even decide to do some form of bandit search here, where they abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. It is important to keep in mind that we only care if the model we are testing beats the best model, the tuner does not care about how much better or worse a configuration is.
 
 The ```self.hypermodel.build(hp)``` function called in ```run_trial``` is what will supply us with a blank model.
 
@@ -84,7 +86,7 @@ class MyTuner(tuner.engine.tuner.Tuner):
 We initialize our Tuner and provide our training data
 
 ```python
-tuner = MyTuner(project_dir='C:/myProject', objective_direction='min', hypermodel=build_model)
+tuner = MyTuner(project_dir='C:/myProject', objective_direction='min', build_fn=build_model)
 tuner.search(X_train, y_train, X_test, y_test)
 ```
 
