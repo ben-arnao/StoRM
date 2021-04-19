@@ -38,7 +38,7 @@ class Tuner:
 
         if len(self.trials) == 0:
             self.hyperparameters = HyperParameters()
-            self.build_fn.build(self.hyperparameters)
+            self.build_fn(self.hyperparameters)
         else:
             self.hyperparameters = self.trials[-1].hyperparameters.copy()
 
@@ -88,19 +88,6 @@ class Tuner:
         self.save()
         self.report_trial(trial)
 
-    def retrieve_trial_metric(self, metric, include_missing=False):
-        arr = []
-        has_value = False
-        for trial in self.trials:
-            if metric in trial.metrics.keys():
-                arr.append(trial.metrics[metric])
-                has_value = True
-            elif include_missing:
-                arr.append(None)
-        if has_value:
-            return arr
-        raise KeyError(metric + str(' does not exist in any trial metrics'))
-
     def get_best_config(self):
         bt = self.get_best_trial()
         if bt is None:
@@ -118,7 +105,7 @@ class Tuner:
         # handle finding new best config
         if not np.isnan(trial.score) and (len(self.score_history) == 0 or self._trial_is_new_best(trial)):
             print('<><><> NEW BEST! <><><>')
-            print(trial.hyperparameters)
+            print(self.get_best_trial().hyperparameters)
 
         # print/log whatever you want to here
         print(len(self.score_history), '| score:', round(trial.score, 8) if not np.isnan(trial.score) else None)
@@ -146,7 +133,7 @@ class Tuner:
     # Then we create a hash only based off of active params.
     def _hash_active_params(self):
         self.hyperparameters.active_params = set()
-        self.build_fn.build(self.hyperparameters)
+        self.build_fn(self.hyperparameters)
         param_hash = self.hyperparameters.compute_values_hash()
         return param_hash
 
@@ -263,8 +250,13 @@ class HyperParameters:
         self.active_params = set()
 
     def __str__(self):
-        for param in sorted(list(self.active_params)):
-            print('\t' + param, ':', self.values[param])
+        res = ''
+        for idx, param in enumerate(sorted(list(self.active_params))):
+            if idx == 0:
+                res += '\t' + str(param) + ' : ' + str(self.values[param])
+            else:
+                res += '\r\n\t' + str(param) + ' : ' + str(self.values[param])
+        return res
 
     def copy(self):
         hps_copy = HyperParameters()
