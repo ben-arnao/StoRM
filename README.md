@@ -1,5 +1,5 @@
 # StoRM (Stochastic Random Mutator)
-A hyperparameter tuner for high-dimensional, categorically-parametered, intractable optimization problems (Neural Network)
+A hyperparameter tuner for high-dimensional, categorically-parametered, intractable optimization problems (Ex. Neural Network)
 
 # Motivations of this tuner
 
@@ -7,9 +7,9 @@ Neural network hyper parameter optimization is an especially challenging task du
 
 1) Parameters are highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you will likely have to adjust many parameters simultaneously to escape local minima.
 
-2) The search space can be highly non-convex and intractable, with many categorical/discrete/boolean/nested parameters. This sort of search landscape makes it very difficult to generate any sort of quantitative probability model.
+2) The search space can be highly non-convex and intractable, with many categorical, discrete-valued, conditional, and nested parameters. This sort of parameter makes it very difficult to generate any sort of quantitative probability model.
 
-3) One might encounter a scenario where tuning a parameter will have very poor or very good results depending on what parameters are tuned with it, so attempting to model which parameters are more likely to be better will require a lot of trials to overcome this level of variance/noise. Even then, the best parameter on average will not always be the parameter of configurations near global minima.
+3) One might encounter a scenario where tuning a parameter will have very poor or very good results depending on what parameters are tuned with it, so attempting to model which parameters are more likely to be better will require a lot of trials to overcome this level of variance/noise. Even then, the best parameter value on average will not always be the best parameter value overall.
 
 4) For high-end performance where local minima is not good enough and we want both a granular and board search, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
 
@@ -17,13 +17,13 @@ Recent research has discussed there is not a lot of reproducible evidence that s
 
 # How does this tuner attempt to solve these issues?
 
-All of the issues mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why this tuner opts against attempting to build some sort surrogate function or gradient-based method to model the probability of the search space, and instead aims for something simpler and hopefully more robust to the problems we're facing. The user should be able to expect something that beats brute force/random search for almost all use cases, which is really what NN tuning needs at this stage.
+All of the issues mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why this tuner opts against attempting to build some sort surrogate function or gradient-based method to model the probability of the search space, and instead aims for something simpler and hopefully more robust to the problems we're facing. The user shouldn't expect a magic algorithm that takes the least amount of steps possible to reach global minima, but they should be able to expect something that beats brute force/random search for almost all use cases by a substantial amount, which is really what NN tuning needs at this stage.
 
 The StoRM tuner can be thought of inuitively as a combination of a grid search combined with random search, where the "distance" between the current best configuration and the next evaluation candidate, is probability based. We randomly mutate the current best configuration along different axes (and sometimes even multiple times along the same axis). The number of mutations made for the next evaluation candidate, is based on a user-defined probability.
 
 The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
-This approach aims to provide a good balance to address the issues stated above. Allowing enough freedom so that we do respect the non-convexness of the search space and co-dependency of variables, while also probalistically restricting how different the next evaluation candidate is from the current best, to provide some level of guidance and locality to the search.
+This approach aims to address the issues stated above by allowing enough freedom so that we do respect the non-convexness of the search space and co-dependency of variables, while also probalistically restricting how different the next evaluation candidate is from the current best, to provide some level of guidance and locality to the search.
 
 # Installation
 
