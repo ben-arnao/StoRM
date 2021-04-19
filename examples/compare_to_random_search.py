@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras.layers import Dense, Activation
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import SGD, Adam
-from tuner import Tuner
+from storm.tuner import Tuner
 
 epochs = 50
 trials_per_mode = 10
