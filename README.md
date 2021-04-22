@@ -60,10 +60,6 @@ def build_model(hp):
 
 We are required to override the ```run_trial()``` method for our own Tuner implementation, this encapsulates all the execution of a single trial. All the ```run_trial``` method needs to do is assign a score to the trial ```self.score_trial(trial, score)``` using a given parameter configuration ```trial.hyperparameters```. How the user generates a score for the configuration is entirely at their discretion.
 
-We leave it up to the user to generate however accurate of a score they would like to. For example one may decide to implement their own methodologies to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains). One may even decide to do some form of bandit search here, where they abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point which will cause the trial's score to be defaulted to None so it is not tested again.
-
-This freedom allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training. The tuner will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize.
-
 The ```self.build_fn(hp)``` function called in ```run_trial``` is what will supply us with a blank model.
 
 As we can see, any arguments you provide in the ```search()``` entry method, can be accessed in your ```run_trial()``` method.
@@ -115,6 +111,15 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 ```init_random```: How many initial iterations to perform random search for. This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point.
 
 ```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases, although for problems where you expect a large degree of parameter independance you may move the value closer to 0 and likewise for problems where you expect a great degree of parameter co-dependence you may set the value closer to 1.
+
+# Design goals
+
+The StoRM tuner is designed to be as simple as possible. The tuner supplies a parameter configuration and the user assigns this configuration a score. We leave it up to the user to implement any number of methodologies that might fit their goals and use cases. These can include:
+
+- Techniques to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
+- Bandit search techniques, where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again.
+- This freedom allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training
+- The tuner will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize.
 
 # Other notes/features
 
