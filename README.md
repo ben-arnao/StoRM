@@ -58,9 +58,11 @@ def build_model(hp):
     return model
 ```
 
-We are required to override the ```run_trial()``` method for our own Tuner, this encapsulates all the work of a single trial. All the ```run_trial``` method needs to do is assign a score to the trial ```self.score_trial(trial, score)```. How you use the configuration supplied to ```run_trial``` to generate a score for the trial, is up to you (ex. K-fold cross validation, trailing average of epoch loss to mitigate variance, etc.).
+We are required to override the ```run_trial()``` method for our own Tuner implementation, this encapsulates all the execution of a single trial. All the ```run_trial``` method needs to do is assign a score to the trial ```self.score_trial(trial, score)``` using a given parameter configuration ```trial.hyperparameters```. How the user generates a score for the configuration is entirely at their discretion.
 
-One may even decide to do some form of bandit search here, where they abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. It is important to keep in mind that we only care if the model we are testing beats the best model, the tuner does not care about how much better or worse a configuration is.
+We leave it up to the user to generate however accurate of a score they would like to. For example one may decide to implement their own methodologies to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains). One may even decide to do some form of bandit search here, where they abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point which will cause the trial's score to be defaulted to None so it is not tested again.
+
+This freedom allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training. The tuner will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize.
 
 The ```self.build_fn(hp)``` function called in ```run_trial``` is what will supply us with a blank model.
 
