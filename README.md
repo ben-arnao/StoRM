@@ -60,28 +60,36 @@ def build_model(hp):
 
 We are required to override the ```run_trial()``` method for our own Tuner implementation, this encapsulates all the execution of a single trial. All the ```run_trial``` method needs to do is assign a score to the trial ```self.score_trial(trial, score)``` using a given parameter configuration ```trial.hyperparameters```. How the user generates a score for the configuration is entirely at their discretion.
 
-The ```self.build_fn(hp)``` function called in ```run_trial``` is what will supply us with a blank model.
+The ```self.build_fn(hp)``` function called in ```run_trial``` is what will supply us with a blank model (as defined above).
 
 As we can see, any arguments you provide in the ```search()``` entry method, can be accessed in your ```run_trial()``` method.
 
 ```python
-def get_model_score(model, params, X_train, y_train, X_test, y_test):
-    history = model.fit(X_train,
-                        y_train,
-                        epochs=25,
-                        validation_data=(X_test, y_test),
-                        batch_size=params['batch_size'])
-    return history.history['val_loss'][-1]
-
 from storm.tuner import Tuner
 
 class MyTuner(Tuner):
 
     def run_trial(self, trial, *args):
+        # retrieve hyperparameters
         hp = trial.hyperparameters
+        
+        # retrieve any parameters supplied via main search method
         X_train, y_train, X_test, y_test = args[0], args[1], args[2], args[3]
+        
+        # build our configuration
         model = self.build_fn(hp)
-        score = get_model_score(model, hp.values, X_train, y_train, X_test, y_test)
+        
+        # train model
+        history = model.fit(X_train,
+                            y_train,
+                            epochs=25,
+                            validation_data=(X_test, y_test),
+                            batch_size=params['batch_size'])
+                            
+        # calculate score
+        score = history.history['val_loss'][-1]
+        
+        # assign score to the trial
         self.score_trial(trial, score)
 ```
 
