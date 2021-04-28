@@ -47,6 +47,9 @@ class Tuner:
             self.build_fn(self.hyperparameters)
         else:
             self.hyperparameters = self.trials[-1].hyperparameters.copy()
+            
+        # general purpose variable for user    
+        self.user_var = None
 
     def _summarize_loaded_tuner(self):
         if len(self.score_history) == 0:
