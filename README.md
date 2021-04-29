@@ -145,4 +145,13 @@ Here we can see that over ten trials each, StoRM has a clear advantage.
 
 ```random scores mean: 0.010490878883283586 | stdev: 0.006145158964894091```
 
+Run ```compare_to_random_optuna.py``` from ```examples``` directory to compare performance to a state of the art optimizer like Optuna.
+
+Here we can see that over 25 trials each, StoRM has a slight edge and is definitely competitive.
+
+```storm scores mean: 0.6152435888846715 std: 0.012562026804848855```
+
+```optuna scores mean: 0.6111923088630041 std: 0.011612774221843973```
+
+
 
