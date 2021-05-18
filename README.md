@@ -7,11 +7,11 @@ Neural network hyper parameter optimization is an especially challenging task du
 
 1) Parameters are highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you will likely have to adjust many parameters simultaneously to escape local minima.
 
-2) The search space can be highly non-convex and intractable, with many categorical, discrete-valued, conditional, and nested parameters. This sort of parameter makes it very difficult to generate any sort of quantitative probability model.
+2) The search space can be highly non-convex and intractable, with many categorical, discrete-valued, conditional, and nested parameters. This sort of parameter space makes it very difficult to generate any sort of quantitative probability model.
 
 3) One might encounter a scenario where tuning a parameter will have very poor or very good results depending on what parameters are tuned with it, so attempting to model which parameters are more likely to be better will require a lot of trials to overcome this level of variance/noise. Even then, the best parameter value on average will not always be the best parameter value overall.
 
-4) For high-end performance where local minima is not good enough and we want both a granular and board search, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
+4) For high-end performance where local minima is not good enough and we want the best possible performance, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
 
 Recent research has discussed there is not a lot of reproducible evidence that show any of today's state of the art techniques significantly beat a plain old random search with some form of early stopping- https://arxiv.org/pdf/1902.07638.pdf
 
