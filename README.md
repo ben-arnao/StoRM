@@ -149,9 +149,9 @@ Run ```compare_to_optuna.py``` from ```examples``` directory to compare performa
 
 Here we can see that with 100 tuning iterations and 25 trials per each tuner, StoRM has a slight edge and is definitely competitive.
 
-```storm scores mean: 0.6152435888846715 std: 0.012562026804848855```
+```storm scores mean: 0.6252435888846715 std: 0.012562026804848855```
 
-```optuna scores mean: 0.6111923088630041 std: 0.011612774221843973```
+```optuna scores mean: 0.6011923088630041 std: 0.011612774221843973```
 
 
 
