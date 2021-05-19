@@ -147,7 +147,7 @@ Here we can see that over ten trials each, StoRM has a clear advantage.
 
 Run ```compare_to_optuna.py``` from ```examples``` directory to compare performance to a state of the art optimizer like Optuna.
 
-Here we can see that over 25 trials each, StoRM has a slight edge and is definitely competitive.
+Here we can see that with 100 tuning iterations and 25 trials per each tuner, StoRM has a slight edge and is definitely competitive.
 
 ```storm scores mean: 0.6152435888846715 std: 0.012562026804848855```
 
