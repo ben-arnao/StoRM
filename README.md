@@ -109,10 +109,10 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 ```python
 
     def __init__(self,
-                 project_dir='C:/myProject/',
                  build_fn=build_model,
                  objective_direction='min',
-                 init_random=25,
+                 init_random=10,
+                 max_trials=100,
                  randomize_axis_factor=0.5)
 ```
 
