@@ -129,7 +129,7 @@ The StoRM tuner is designed to be as simple as possible. The tuner supplies a pa
 
 Another design goal is to make as little assumptions about the search space as possible. The belief is that if we try to "cheat" and speed up optimization by making an assumptions about the search space, there might be uses cases where this does not hold true. Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training.
 
-Because of the tuner's experiment-agnostic approach, storm will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize that can mAKe the search space even trickier and harder for traditional approaches to handle.
+Because of the tuner's experiment-agnostic approach, storm will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle.
 
 # Other notes/features
 
