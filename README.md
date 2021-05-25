@@ -127,9 +127,24 @@ The StoRM tuner is designed to be as simple as possible. The tuner supplies a pa
 - Techniques to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
 - Techniques where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. *Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again. Note: if we decide to run metrics on variables accross all trials after tuning is complete, this may skew the results.*
 
-Another design goal is to make as little assumptions about the search space as possible. The belief is that if we try to "cheat" and speed up optimization by making an assumptions about the search space, there might be uses cases where this does not hold true. Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training.
+Another design goal is to make as little assumptions about the search space as possible. The belief is that if we try to "cheat" and speed up optimization by making an assumptions about the search space (ex. if validation loss starts going up add more dropout, or Selu works better when combined with Batch Norm, batch size of 128 is usually the best value so sample it more often, etc.), there might be uses cases where this does not hold true and many times a particular experiment is unique from others in a variety of ways. Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training.
 
 Because of the tuner's experiment-agnostic approach, storm will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle.
+
+# The user's design goals
+
+Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space properly. StoRM will only be as good as the paramter space it operates on. A few things to keep in mind...
+
+- For an ordinal value like dropout, one might decide to add a binary on/off parameter to unlock dropout rate. If optimization intializes to a suboptimal higher dropout value, and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minima.
+- Most NN parameters are not very sensitive at a micro-level and it is more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning and well as sampling of values (log, reverse log, exp, linear, etc.) which is very paramter-dependant. There is then nothing stopping the user from re-paramterizing their search space after narrowing in on areas that they already know to be better than others.
+
+In most cases the selection of values should be fairly intuitive...
+
+lr: [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
+batch size: [32, 64, 128, 256]
+kernel size: [50, 100, 200, 500]
+
+- For parameters that are coupled with another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both seperately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right
 
 # Other notes/features
 
