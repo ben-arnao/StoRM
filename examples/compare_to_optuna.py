@@ -75,7 +75,8 @@ for x in range(25):
             if hp.Param('add_noise', [True, False]):
                 model.add(GaussianNoise(hp.Param('noise_std', [1e-5, 1e-4, 1e-3, 1e-2, 1e-1], ordered=True)))
 
-            model.add(Dropout(hp.Param('dropout', [0, 0.1, 0.2, 0.3, 0.4, 0.5], ordered=True)))
+            if hp.Param('add_dropout', [True, False]):
+                model.add(Dropout(hp.Param('dropout_rate', [0.1, 0.2, 0.3, 0.4, 0.5], ordered=True)))
 
         model.add(
             tf.keras.layers.Dense(CLASSES, kernel_regularizer=tf.keras.regularizers.l2(weight_decay))
