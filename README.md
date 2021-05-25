@@ -141,7 +141,9 @@ Of course, most of the success of StoRM revolves around the user's ability to pa
 In most cases the selection of values should be fairly intuitive...
 
 lr: [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
+
 batch size: [32, 64, 128, 256]
+
 kernel size: [50, 100, 200, 500]
 
 - For parameters that are coupled with another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both seperately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right
