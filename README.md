@@ -11,7 +11,7 @@ Neural network hyper parameter optimization is an especially challenging task du
 
 3) One might encounter a scenario where tuning a parameter will have very poor or very good results depending on what parameters are tuned with it, so attempting to model which parameters are more likely to be better will require a lot of trials to overcome this level of variance/noise. Even then, the best parameter value on average will not always be the best parameter value overall.
 
-4) For high-end performance where local minima is not good enough and we want the best possible performance, or for domains where there has not been extensive research and a general understanding on what types of choices work better than others, the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
+4) For high-end performance where local minima is not good enough and we want the best possible performance, or for domains where there has not been extensive research and there is not a general understanding on what types of choices work better than others, we might want to tune many parameters and the dimensionality of the search space can get very large such that Bayesian Optimization-related methods are not very effective.
 
 Recent research has discussed there is not a lot of reproducible evidence that show any of today's state of the art techniques significantly beat a plain old random search with some form of early stopping- https://arxiv.org/pdf/1902.07638.pdf
 
@@ -120,7 +120,7 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 
 ```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases and will almost always be good enough, although for problems where you expect a large degree of parameter independance you may move the value closer to 0 and likewise for problems where you expect a great degree of parameter co-dependence you may set the value closer to 1 to maximize performance.
 
-# Design goals
+# StoRM's design goals
 
 The StoRM tuner is designed to be as simple as possible. The tuner supplies a parameter configuration and the user assigns this configuration a score. We leave it up to the user to implement any number of methodologies that might fit their goals and use cases. These can include:
 
