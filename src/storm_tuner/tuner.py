@@ -6,6 +6,9 @@ import random
 import numpy as np
 from pathlib import Path
 
+random.seed(42)
+
+
 class Tuner:
 
     def __init__(self,
@@ -15,15 +18,7 @@ class Tuner:
                  init_random=10,
                  objective_direction='max',
                  overwrite=False,
-                 max_iters=1000,
-                 seed=42,
-                 input_shape=None):
-
-        if seed is None:
-            import time
-            random.seed(time.time())
-        else:
-            random.seed(seed)
+                 max_iters=1000):
 
         if project_dir:
             self.project_dir = project_dir
@@ -36,7 +31,6 @@ class Tuner:
 
         self.objective_direction = objective_direction
         self.build_fn = build_fn
-        self.input_shape = input_shape
 
         if os.path.exists(self._trials_path) and not overwrite:
             self.load()
@@ -50,15 +44,12 @@ class Tuner:
 
         if len(self.trials) == 0:
             self.hyperparameters = HyperParameters()
-            self._use_appropriate_build_fn()
+            self.build_fn(self.hyperparameters)
         else:
             self.hyperparameters = self.trials[-1].hyperparameters.copy()
-
-    def _use_appropriate_build_fn(self):
-        if self.input_shape is not None:
-            self.build_fn(self.hyperparameters, input_shape=self.input_shape)
-        else:
-            self.build_fn(self.hyperparameters)
+            
+        # general purpose variable for user    
+        self.user_var = None
 
     def _summarize_loaded_tuner(self):
         if len(self.score_history) == 0:
@@ -151,7 +142,7 @@ class Tuner:
     # Then we create a hash only based off of active params.
     def _hash_active_params(self):
         self.hyperparameters.active_params = set()
-        self._use_appropriate_build_fn()
+        self.build_fn(self.hyperparameters)
         param_hash = self.hyperparameters.compute_values_hash()
         return param_hash
 
