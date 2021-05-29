@@ -84,7 +84,7 @@ class MyTuner(Tuner):
                             y_train,
                             epochs=25,
                             validation_data=(X_test, y_test),
-                            batch_size=params['batch_size'])
+                            batch_size=hp.values['batch_size'])
                             
         # calculate score
         score = history.history['val_loss'][-1]
