@@ -6,8 +6,6 @@ import random
 import numpy as np
 from pathlib import Path
 
-random.seed(42)
-
 
 class Tuner:
 
@@ -15,10 +13,18 @@ class Tuner:
                  project_dir=None,
                  build_fn=None,
                  randomize_axis_factor=0.5,
-                 init_random=10,
+                 init_random=5,
                  objective_direction='max',
                  overwrite=False,
-                 max_iters=1000):
+                 max_iters=100,
+                 seed=42):
+        
+        if seed is None:
+            import time
+            random.seed(time.time())
+        else:
+            random.seed(seed)
+
 
         if project_dir:
             self.project_dir = project_dir
