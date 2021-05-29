@@ -44,7 +44,7 @@ def build_model(hp):
     
     model.add(Dense(10))
     
-    # here is a categorical parameter that most optimizers do not do well with
+    # here is a categorical parameter that most tuners do not do well with
     activation_choices = ['tanh', 'softsign', 'selu', 'relu', 'elu', 'softplus']
     model.add(Activation(hp.Param('activation', activation_choices)))
     
