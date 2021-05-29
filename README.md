@@ -136,7 +136,7 @@ Because of the tuner's experiment-agnostic approach, storm will also work with v
 Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space properly. StoRM will only be as good as the paramter space it operates on. A few things to keep in mind...
 
 - For an ordinal value like dropout, one might decide to add a binary on/off parameter to unlock dropout rate. If optimization intializes to a suboptimal higher dropout value, and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minima.
-- Most NN parameters are not very sensitive at a micro-level and it is more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, reverse log, exp, linear, etc.) which is very parameter-dependant. At the end of the day there is then nothing stopping the user from re-paramterizing their search space after narrowing in on promising areas from running storm tuner at a broader scope.
+- Most NN parameters are not very sensitive at a micro-level and it is more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependant. At the end of the day there is then nothing stopping the user from re-paramterizing their search space after narrowing in on promising areas from running storm tuner at a broader scope.
 
 In most cases the selection of values should be fairly intuitive...
 
@@ -150,7 +150,7 @@ kernel size: [50, 100, 200, 500]
 
 # Other notes/features
 
-The tuner keep tracks of which parameters are in use by building a dummy model prior to hashing the configuration. When building the model, parameters the model building function actually draws from are flagged as active. For example, if we have a parameter to determine number of layers to use, if the number of layers is set to 1, parameters only applicable to layer 2+ will not be included in the hash. This allows us to ensure we waste resources testing configurations that are virtually identical.
+The tuner keep tracks of which parameters are in use by building a dummy model prior to hashing the configuration. When building the model, parameters the model building function actually draws from are flagged as active. For example, if we have a parameter to determine number of layers to use, if the number of layers is set to 1, parameters only applicable to layer 2+ will not be included in the hash. This allows us to ensure we do not waste resources testing configurations that are virtually identical.
 
 # Performance
 
