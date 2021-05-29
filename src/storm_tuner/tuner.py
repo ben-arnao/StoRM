@@ -93,6 +93,7 @@ class Tuner:
         pickle.dump(self.trials, open(self._trials_path, "wb"))
 
     def load(self):  # all that needs to be loaded is the trials pickle file to fully reload the tuner state
+        # probably want to eventually make this a json
         self.trials = pickle.load(open(self._trials_path, "rb"))
 
     @property
