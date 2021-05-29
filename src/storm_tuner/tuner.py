@@ -254,7 +254,8 @@ class Trial:
 
 class Param:
     def __init__(self, values, ordered):
-        self.values = list(set(values))
+        # should make values a set but need to preserve order if ordered
+        self.values = values
         self.ordered = ordered
 
 
