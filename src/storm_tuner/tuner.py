@@ -254,7 +254,7 @@ class Trial:
 
 class Param:
     def __init__(self, values, ordered):
-        self.values = values
+        self.values = set(values)
         self.ordered = ordered
 
 
