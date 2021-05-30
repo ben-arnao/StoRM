@@ -1,13 +1,13 @@
 # StoRM (Stochastic Random Mutator)
-A hyperparameter tuner for high-dimensional, categorically-parametered, intractable optimization problems (Ex. Neural Network)
+A robust hyperparameter tuner for high-dimensional, categorically and/or conditionally-parametered, intractable optimization problems (Ex. Neural Network)
 
 # Motivations of this tuner
 
 Neural network hyper parameter optimization is an especially challenging task due to a few reasons:
 
-1) Parameters are highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you will likely have to adjust many parameters simultaneously to escape local minima.
+1) Parameters can be highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you will likely have to adjust many parameters simultaneously to escape local minima. You may also have scenarios where adjusting a parameter can completely alter the performance of other parameters as well.
 
-2) The search space can be highly non-convex and intractable, with many categorical, discrete-valued, conditional, and nested parameters. This sort of parameter space makes it very difficult to generate any sort of quantitative probability model.
+2) The search space can be highly non-convex, with many categorical, discrete-valued, conditional, and nested parameters. This sort of parameter space makes it very difficult to generate any sort of quantitative probability model.
 
 3) One might encounter a scenario where tuning a parameter will have very poor or very good results depending on what parameters are tuned with it, so attempting to model which parameters are more likely to be better will require a lot of trials to overcome this level of variance/noise. Even then, the best parameter value on average will not always be the best parameter value overall.
 
@@ -129,11 +129,11 @@ The StoRM tuner is designed to be as simple as possible. The tuner supplies a pa
 
 Another design goal is to make as little assumptions about the search space as possible. The belief is that if we try to "cheat" and speed up optimization by making an assumptions about the search space there might be uses cases where this does not hold true.
 
-For example as we accumulate samples, maybe we decide to sample historically better values more often. The drawback of this line of thinking, is that as mentioned above, maybe the global best configuration has parameters that are not as good on average as others. Maybe we set the random-decay value too low and end up gathering these estimates on a suboptimal area of the search space that makes it harder and harder for us to escape.
+For example as we accumulate samples, maybe we decide to sample historically better values more often. The drawback of this line of thinking, is that as mentioned above, maybe the global best configuration has parameters that are not as good on average as others. Maybe we end up accumlating these samples on a suboptimal area of the search space and this maybe it even harder or us to escape local minima.
 
-While it is true that for many uses cases this is probably not true, and that sampling this way can probably increase convergeance speed, for many problems it may be hard to even know whether or not this is the case. We decide to air on the side of caution and make sure the tuner works well for all use cases without any prior knowledge of the underlying search space dynamics.
+While it is true that for many uses cases the above is *probably* not true, and that sampling this way can probably increase convergeance speed, for many problems it may be hard to even know whether or not this is the case. We decide to air on the side of caution and make sure the tuner works well for all use cases without any prior knowledge of the underlying search space dynamics.
 
-Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training.
+Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training. As we have seen above, the builder function is responsible more or less for flagging a parameter as active or not (although in most cases it also makes sense for us to return a model here as well). Where we actual utilize the parameter is up to us.
 
 Because of the tuner's experiment-agnostic approach, storm will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle.
 
@@ -142,7 +142,8 @@ Because of the tuner's experiment-agnostic approach, storm will also work with v
 Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space properly. StoRM will only be as good as the paramter space it operates on. A few things to keep in mind...
 
 - For an ordinal value like dropout, one might decide to add a binary on/off parameter to unlock dropout rate. If optimization intializes to a suboptimal higher dropout value, and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minima.
-- Most NN parameters are not very sensitive at a micro-level and it is more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependant. At the end of the day there is then nothing stopping the user from re-paramterizing their search space after narrowing in on promising areas from running storm tuner at a broader scope.
+- For ordinal parameters where it is not an option to use an additional "gateway" parameter, it is suggested to keep the amount of values under 10 for reasons explained in other points.
+- Most NN hyper parameters are not very sensitive and it is more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependant.
 
 In most cases the selection of values should be fairly intuitive...
 
@@ -151,6 +152,8 @@ lr: [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
 batch size: [32, 64, 128, 256]
 
 kernel size: [50, 100, 200, 500]
+
+At the end of the day there is then nothing stopping the user from re-paramterizing their search space after narrowing in on promising areas from running storm tuner at a broader scope.
 
 - For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both seperately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
 
