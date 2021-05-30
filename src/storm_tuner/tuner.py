@@ -297,6 +297,9 @@ class HyperParameters:
     def Param(self, name, values, ordered=False):
         self.active_params.add(name)  # mark param as active
         if name not in self.values or name not in self.space:  # register and randomize freshly encountered param
+            if len(values) > 10:
+                print('Param {0} has more than 10 values ({1}). It is recommended to keep the number of potential '
+                      'values for a parameter under 10'.format(name, len(values)))
             self.space[name] = Param(values, ordered)
             self.values[name] = random.choice(values)
         return self.values[name]  # retrieve param
