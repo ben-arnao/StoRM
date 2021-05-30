@@ -65,7 +65,7 @@ The ```self.build_fn(hp)``` function called in ```run_trial``` is what will supp
 As we can see, any arguments you provide in the ```search()``` entry method, can be accessed in your ```run_trial()``` method.
 
 ```python
-from storm.tuner import Tuner
+from storm_tuner import Tuner
 
 class MyTuner(Tuner):
 
