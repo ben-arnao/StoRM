@@ -129,7 +129,7 @@ The StoRM tuner is designed to be as simple as possible. The tuner supplies a pa
 
 Another design goal is to make as little assumptions about the search space as possible. The belief is that if we try to "cheat" and speed up optimization by making an assumptions about the search space there might be uses cases where this does not hold true.
 
-For example as we accumulate samples, maybe we decide to sample historically better values more often. The drawback of this line of thinking, is that as mentioned above, maybe the global best configuration has parameters that are not as good on average as others. Maybe we end up accumlating these samples on a suboptimal area of the search space and this maybe it even harder or us to escape local minima.
+For example as we accumulate samples, maybe we decide to sample historically better values more often. The drawback of this line of thinking, is that as mentioned above, maybe the global best configuration has parameters that are not as good on average as others. Maybe we end up accumlating these samples on a suboptimal area of the search space and this makes it even harder or us to escape local minima.
 
 While it is true that for many uses cases the above is *probably* not true, and that sampling this way can probably increase convergeance speed, for many problems it may be hard to even know whether or not this is the case. We decide to air on the side of caution and make sure the tuner works well for all use cases without any prior knowledge of the underlying search space dynamics.
 
