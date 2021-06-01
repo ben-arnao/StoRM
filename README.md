@@ -137,6 +137,12 @@ Storm should be designed to be as generic as possible AND there is actually noth
 
 Because of the tuner's experiment-agnostic approach, storm will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle.
 
+# StoRM is library-agnostic.
+
+Although the examples here use Tensorflow/Keras StoRM works with any library or algorithm (sklearn, pytorch, etc.). One simply defines any parameters we are optimizing in  ```build_fn```. The user can decide to return a model right here and utilize StoRM's inline parameterization, or they can opt to use parameters in ```run_trial```.
+
+As mentioned before, the tuner only provides a configuration of parameters, you score it. You don't even need to have a model!
+
 # The user's design goals
 
 Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space properly. StoRM will only be as good as the paramter space it operates on. A few things to keep in mind...
