@@ -137,12 +137,6 @@ Storm should be designed to be as generic as possible AND there is actually noth
 
 Because of the tuner's experiment-agnostic approach, storm will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle.
 
-# StoRM is library-agnostic.
-
-Although the examples here use Tensorflow/Keras StoRM works with any library or algorithm (sklearn, pytorch, etc.). One simply defines any parameters we are optimizing in  ```build_fn```. The user can decide to return a model right here and utilize StoRM's inline parameterization, or they can opt to use parameters in ```run_trial```.
-
-As mentioned before, the tuner only provides a configuration of parameters, you score it. You don't even need to have a model!
-
 # The user's design goals
 
 Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space properly. StoRM will only be as good as the paramter space it operates on. A few things to keep in mind...
@@ -162,6 +156,18 @@ kernel size: [50, 100, 200, 500]
 At the end of the day there is then nothing stopping the user from re-paramterizing their search space after narrowing in on promising areas from running storm tuner at a broader scope.
 
 - For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both seperately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
+
+# StoRM is library-agnostic.
+
+Although the examples here use Tensorflow/Keras StoRM works with any library or algorithm (sklearn, pytorch, etc.). One simply defines any parameters we are optimizing in  ```build_fn```. The user can decide to return a model right here and utilize StoRM's inline parameterization, or they can opt to use parameters in ```run_trial```.
+
+As mentioned before, the tuner only provides a configuration of parameters, you score it. You don't even need to have a model!
+
+# What types of problems can StoRM be used for?
+
+StoRM should be used for optimization problems where the parameter space can high dimensional and has many categorical/conditional variables. StoRM should also be used when parameters do not need to be optimized at very fine levels, but rather we need to find good general choices. In short, StoRM will be most effective when there are many codependant decisions to be made.
+
+StoRM will probably not be the best tuner to use if you are optimizing many real valued parameters that always have an affect on the target function, with low codependencies, and which can be sensitive to small changes such that we should offer the real valued spectrum of values, and not just a few bins to chose from. For these types of problems, Bayesian Optimization will still be more effective.
 
 # Other notes/features
 
