@@ -165,7 +165,7 @@ As mentioned before, the tuner only provides a configuration of parameters, you 
 
 # What types of problems can StoRM be used for?
 
-StoRM should be used for optimization problems where the parameter space can high dimensional and has many categorical/conditional variables. StoRM should also be used when parameters do not need to be optimized at very fine levels, but rather we need to find good general choices. In short, StoRM will be most effective when there are many codependant decisions to be made.
+StoRM should be used for optimization problems where the parameter space can be high dimensional and has many categorical/conditional variables. StoRM should also be used when parameters do not need to be optimized at very fine levels, but rather we need to find good general choices. In short, StoRM will be most effective when there are many codependant decisions to be made.
 
 StoRM will probably not be the best tuner to use if you are optimizing many real valued parameters that always have an affect on the target function, with low codependencies, and which can be sensitive to small changes such that we should offer the real valued spectrum of values, and not just a few bins to chose from. For these types of problems, Bayesian Optimization will still be more effective.
 
