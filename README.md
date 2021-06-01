@@ -127,23 +127,23 @@ The StoRM tuner is designed to be as simple as possible. The tuner supplies a pa
 - Techniques to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
 - Techniques where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. *Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again. Note: if we decide to run metrics on variables accross all trials after tuning is complete, this may skew the results.*
 
-Another design goal is to make as little assumptions about the search space as possible. The belief is that if we try to "cheat" and speed up optimization by making an assumptions about the search space there might be uses cases where this does not hold true.
+Another design goal is to make as little assumptions about the search space as possible. The belief is that if we try to "cheat" and speed up optimization by making assumptions about the search space there might be uses cases where this does not hold true.
 
 For example as we accumulate samples, maybe we decide to sample historically better values more often. The drawback of this line of thinking, is that as mentioned above, maybe the global best configuration has parameters that are not as good on average as others. Maybe we end up accumlating these samples on a suboptimal area of the search space and this makes it even harder or us to escape local minima.
 
-While it is true that for many uses cases the above is *probably* not true, and that sampling this way can probably increase convergeance speed, for many problems it may be hard to even know whether or not this is the case. We decide to air on the side of caution and make sure the tuner works well for all use cases without any prior knowledge of the underlying search space dynamics.
+While it is true that for many simple use cases the above is *probably* not true, and that sampling this way *can* probably increase convergeance speed, for many problems it this will not be true and for many problems it may be hard to even know whether or not this is the case. We decide to air on the side of caution and make sure the tuner works well for all use cases without any prior knowledge of the underlying search space dynamics.
 
-Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training. As we have seen above, the builder function is responsible more or less for flagging a parameter as active or not (although in most cases it also makes sense for us to return a model here as well). Where we actual utilize the parameter is up to us.
+Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks or a particular NN library coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training. As we have seen above, the builder function is responsible more or less for flagging a parameter as active or not (although in most cases it is most convenient for us to return a model here as well). Where we actual utilize the parameter is up to us.
 
 Because of the tuner's experiment-agnostic approach, storm will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle.
 
 # The user's design goals
 
-Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space properly. StoRM will only be as good as the paramter space it operates on. A few things to keep in mind...
+Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space properly. StoRM will only be as good as the parameter space it operates on. A few things to keep in mind...
 
 - For an ordinal value like dropout, one might decide to add a binary on/off parameter to unlock dropout rate. If optimization intializes to a suboptimal higher dropout value, and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minima.
-- For ordinal parameters where it is not an option to use an additional "gateway" parameter, it is suggested to keep the amount of values under 10 for reasons explained in other points.
-- Most NN hyper parameters are not very sensitive and it is more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependant.
+- For ordinal parameters where it is not an option to use an additional "gateway" parameter, it is suggested to keep the amount of values under 10 and ideally around 5 for reasons explained above.
+- Most NN hyper parameters are not very sensitive and it is far more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependant.
 
 In most cases the selection of values should be fairly intuitive...
 
@@ -172,6 +172,8 @@ StoRM will probably not be the best tuner to use if you are optimizing many real
 # Other notes/features
 
 The tuner keep tracks of which parameters are in use by building a dummy model prior to hashing the configuration. When building the model, parameters the model building function actually draws from are flagged as active. For example, if we have a parameter to determine number of layers to use, if the number of layers is set to 1, parameters only applicable to layer 2+ will not be included in the hash. This allows us to ensure we do not waste resources testing configurations that are virtually identical.
+
+A StoRM ```Trial``` like the one used in the run trial method above, has a metrics dictionary. Easily allows us to store any pertinent information to this trial for review later on.
 
 # Performance
 
