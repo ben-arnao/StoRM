@@ -161,7 +161,7 @@ At the end of the day there is then nothing stopping the user from re-paramteriz
 
 Although the examples here use Tensorflow/Keras StoRM works with any library or algorithm (sklearn, pytorch, etc.). One simply defines any parameters we are optimizing in  ```build_fn```. The user can decide to return a model right here and utilize StoRM's inline parameterization, or they can opt to use parameters in ```run_trial```.
 
-As mentioned before, the tuner only provides a configuration of parameters, you score it. You don't even need to have a model!
+As mentioned before, the tuner only provides a configuration of parameters, you score it. You don't even need to have a model! You can also return other items you want to work with from the builder function. For example, maybe we want to setup a callback with conditions parameters. We need to setup the callback in the builder function so StoRM properly flags parameters as active/inactive when it creates the hash, we can then return the callback along with the model, and use it when we fit the model in run_trial and assign the score.
 
 # What types of problems can StoRM be used for?
 
