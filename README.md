@@ -116,7 +116,7 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
                  randomize_axis_factor=0.5)
 ```
 
-```init_random```: How many initial iterations to perform random search for. This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point.
+```init_random```: How many initial iterations to perform random search for. This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point. The more parameters you have and the higher codependency you expect, the higher you should set this number. A value anywhere between 5-25 seems reasonable in most cases. As a rule of thumb, if you set the value equal to the number of parameters being modified, this should be good enough to ensure you start at a decent point.
 
 ```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases and will almost always be good enough, although for problems where you expect a large degree of parameter independance you may move the value closer to 0 and likewise for problems where you expect a great degree of parameter co-dependence you may set the value closer to 1 to maximize performance.
 
