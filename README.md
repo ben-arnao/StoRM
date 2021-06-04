@@ -36,7 +36,7 @@ Here we define our hyperparameter space by providing our own configuration build
 *Keep in mind that your configuration building method does not necessarily need to return a model. There are two ways to use a parameter. You can define and use parameters inline like shown below, however you may also define parameters in the builder function but access parameters after running build_model() as well. There is no functional difference but in most cases we will want to define and use parameters in building our model, and only access train-time parameter elsewhere.
 
 ```python
-def build_model(hp):
+def build_model(hp, *args):
     model = Sequential()
     
     # we can define train-time params in the build model function
