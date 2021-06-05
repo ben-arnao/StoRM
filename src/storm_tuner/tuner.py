@@ -13,18 +13,14 @@ class Tuner:
                  project_dir=None,
                  build_fn=None,
                  randomize_axis_factor=0.5,
-                 init_random=5,
+                 init_random=10,
                  objective_direction='max',
                  overwrite=False,
                  max_iters=100,
-                 seed=42):
-        
-        if seed is None:
-            import time
-            random.seed(time.time())
-        else:
-            random.seed(seed)
+                 seed=None):
 
+        if seed is not None:
+            random.seed(seed)
 
         if project_dir:
             self.project_dir = project_dir
@@ -53,8 +49,8 @@ class Tuner:
             self.build_fn(self.hyperparameters)
         else:
             self.hyperparameters = self.trials[-1].hyperparameters.copy()
-            
-        # general purpose variable for user    
+
+        # general purpose variable for user
         self.user_var = None
 
     def _summarize_loaded_tuner(self):
@@ -124,7 +120,7 @@ class Tuner:
             print(self.get_best_trial().hyperparameters)
 
         # print/log whatever you want to here
-        print(len(self.score_history), '| score:', round(trial.score, 8) if not np.isnan(trial.score) else None)
+        print(len(self.trials), '| score:', round(trial.score, 8) if not np.isnan(trial.score) else None)
 
     def run_trial(self, trial, *args):
         raise NotImplementedError
@@ -212,10 +208,6 @@ class Tuner:
         param_hash = self._draw_config()
         return Trial(self.hyperparameters, param_hash)
 
-    def add_param_value(self, param_name, param_value):  # add a parameter value post-initialization
-        if param_value not in self.get_best_config().space[param_name].values:
-            self.get_best_config().space[param_name].values.append(param_value)
-
     def score_trial(self, trial, trial_value):
         if trial_value is None:
             trial_value = np.nan
@@ -295,6 +287,9 @@ class HyperParameters:
         return hashlib.sha256(s.encode('utf-8')).hexdigest()[:32]
 
     def Param(self, name, values, ordered=False):
+        if name not in self.active_params:
+            raise Exception('Param {0} is being accessed in run_trial, '
+                            'but has not been defined in the model building function!'.format(name))
         self.active_params.add(name)  # mark param as active
         if name not in self.values or name not in self.space:  # register and randomize freshly encountered param
             if len(values) > 10:
