@@ -146,6 +146,9 @@ class Tuner:
     def _hash_active_params(self):
         self.hyperparameters.active_params = set()
         self.build_fn(self.hyperparameters)
+        for param in self.hyperparameters.values.keys():
+            if param not in self.hyperparameters.active_params:
+                del self.hyperparameters.values['param']
         param_hash = self.hyperparameters.compute_values_hash()
         return param_hash
 
