@@ -287,9 +287,6 @@ class HyperParameters:
         return hashlib.sha256(s.encode('utf-8')).hexdigest()[:32]
 
     def Param(self, name, values, ordered=False):
-        if name not in self.active_params:
-            raise Exception('Param {0} is being accessed in run_trial, '
-                            'but has not been defined in the model building function!'.format(name))
         self.active_params.add(name)  # mark param as active
         if name not in self.values or name not in self.space:  # register and randomize freshly encountered param
             if len(values) > 10:
