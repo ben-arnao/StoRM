@@ -137,9 +137,9 @@ The StoRM tuner is designed to be as simple as possible. The tuner supplies a pa
 - Techniques to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
 - Techniques where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. *Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again. Note: if we decide to run metrics on variables accross all trials after tuning is complete, this may skew the results.*
 
-Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks or a particular NN library coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training. As we have seen above, the builder function is responsible more or less for flagging a parameter as active or not (although in most cases it is most convenient for us to return a model here as well). Where we actual utilize the parameter is up to us.
+Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks or a particular NN library coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training.
 
-Because of the tuner's experiment-agnostic approach, storm will also work with various branches of ML that utilize NNs for the model. For example, some reinforcement learning algorithms have another set of parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle.
+Because of the tuner's experiment-agnostic approach, StoRM can be even more advantageous when used with various branches of ML that utilize NNs for the model yet have another set of hyper parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle. For example, reinforcement learning.
 
 # The user's design goals
 
@@ -152,13 +152,13 @@ Of course, most of the success of StoRM revolves around the user's ability to pa
 
 In most cases the selection of values should be fairly intuitive...
 
-lr: [1e-2, 1e-3, 1e-4, 1e-5, 1e-6]
-
 batch size: [32, 64, 128, 256]
 
 momentum: [0.8, 0.9, 0.98]
 
-kernel size: [50, 100, 200, 500]
+kernel size: [50, 100, 200, 400]
+
+lr: [1e-2, 1e-3, 1e-4]
 
 At the end of the day there is then nothing stopping the user from re-paramterizing their search space after narrowing in on promising areas from running storm tuner at a broader scope.
 
