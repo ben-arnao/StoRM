@@ -1,5 +1,5 @@
 # StoRM (Stochastic Random Mutator)
-A robust hyperparameter tuner for high-dimensional, categorically and/or conditionally-parametered, intractable optimization problems (Ex. Neural Network)
+A robust hyperparameter tuner for high-dimensional, categorically and/or conditionally-parameterized, intractable optimization problems (Ex. Neural Network)
 
 # Motivations of this tuner
 
@@ -9,7 +9,7 @@ Parameters can be highly codependent. Adjusting a single parameter may not be en
 
 You may have scenarios where adjusting a parameter can completely alter the performance of other parameters as well, making it very difficult to sample historically better values more often and run the risk of sampling values based on the modeling of a suboptimal parameter space. 
 
-Attempting to model which parameters are more likely to be better will also require a lot of trials to overcome this level of variance/noise. Even then, as eluded to above, the best parameter value on average will not always be the best parameter value overall. 
+Attempting to model which parameters are more likely to be better will also require a lot of trials to overcome this level of variance/noise. Even then, as alluded to above, the best parameter value on average will not always be the best parameter value overall. 
 
 The search space can be highly non-convex, with many categorical, discrete-valued, conditional, and nested parameters. This sort of parameter space makes it very difficult to generate any sort of quantitative probability model.
 
@@ -19,13 +19,13 @@ Recent research has discussed there is not a lot of reproducible evidence that s
 
 # How does this tuner attempt to solve these issues?
 
-All of the issues mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why this tuner opts against attempting to build some sort surrogate function or gradient-based method to model the probability of the search space, and instead aims for something simpler and hopefully more robust to the problems we're facing. The user shouldn't expect a magic algorithm that takes the least amount of steps possible to reach global minima, but they should be able to expect something that beats brute force/random search for almost all use cases by a respectable margin, which is really what NN tuning needs at this stage.
+All of the issues mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why this tuner opts against attempting to build some sort of surrogate function or gradient-based method to model the probability of the search space, and instead aims for something simpler and hopefully more robust to the problems we're facing. The user shouldn't expect a magic algorithm that takes the least amount of steps possible to reach global minima, but they should be able to expect something that beats brute force/random search for almost all use cases by a respectable margin, which is really what NN tuning needs at this stage.
 
-The StoRM tuner can be thought of inuitively as a combination of a grid search combined with random search, where the "distance" between the current best configuration and the next evaluation candidate, is probability based. We randomly mutate the current best configuration along different axes (and sometimes even multiple times along the same axis). The number of mutations made for the next evaluation candidate, is based on a user-defined probability.
+The StoRM tuner can be thought of intuitively as a combination of a grid search combined with random search, where the "distance" between the current best configuration and the next evaluation candidate, is probability based. We randomly mutate the current best configuration along different axes (and sometimes even multiple times along the same axis). The number of mutations made for the next evaluation candidate, is based on a user-defined probability.
 
 The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
-This approach aims to address the issues stated above by allowing enough freedom so that we do respect the non-convexness of the search space and co-dependency of variables, while also probalistically restricting how different the next evaluation candidate is from the current best, to provide some level of guidance and locality to the search.
+This approach aims to address the issues stated above by allowing enough freedom so that we do respect the non-convexities of the search space and co-dependency of variables, while also probabilistically restricting how different the next evaluation candidate is from the current best, to provide some level of guidance and locality to the search.
 
 # Installation
 
@@ -35,7 +35,7 @@ This approach aims to address the issues stated above by allowing enough freedom
 
 Here we define our hyperparameter space by providing our own configuration building method.
 
-NOTE: The configuration building method is an important component of StoRM's functionality. Even though parameters can be accessed else where, for example when the model is trained or during data precprocessing, all parameters must be defined in this method. This is because StoRM will execute this function in the background prior to the user defined execution of a trial. The reason for this is that StoRM will flag parameters that are actually drawn from and then create a hash of this particular configuration. This is a vital component as it ensures we never waste resources testing virtually indentical configurations.
+NOTE: The configuration building method is an important component of StoRM's functionality. Even though parameters can be accessed elsewhere, for example when the model is trained or during data preprocessing, all parameters must be defined in this method. This is because StoRM will execute this function in the background prior to the user defined execution of a trial. The reason for this is that StoRM will flag parameters that are actually drawn from and then create a hash of this particular configuration. This is a vital component as it ensures we never waste resources testing virtually identical configurations.
 
 After we define our HP space, it will usually make the most sense for our function to return an untrained model at this point. However, one may opt to return more than a model in some circumstances (for example an optimizer) or they may even opt to not return anything at all and build the model later. This is entirely up to the user.
 
@@ -128,14 +128,14 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 
 ```init_random```: How many initial iterations to perform random search for. This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point. The more parameters there are and the higher codependency you expect, the higher you should set this number. A value anywhere between 5-25 seems reasonable in most cases. As a rule of thumb, if you set the value roughly equal to the number of parameters being modified, this should be good enough to ensure you start at a decent point.
 
-```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases and will almost always be good enough, although for problems where you expect a large degree of parameter independance you may move the value closer to 0 and likewise for problems where you expect a great degree of parameter co-dependence you may set the value closer to 1 to maximize performance.
+```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases and will almost always be good enough, although for problems where you expect a large degree of parameter independance you may move the value closer to 0 and likewise for problems where you expect a great degree of parameter codependency you may set the value closer to 1 to maximize performance.
 
 # StoRM's design goals
 
 The StoRM tuner is designed to be as simple as possible. The tuner supplies a parameter configuration and the user assigns this configuration a score. We leave it up to the user to implement any number of methodologies that might fit their goals and use cases. These can include:
 
 - Techniques to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
-- Techniques where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. *Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again. Note: if we decide to run metrics on variables accross all trials after tuning is complete, this may skew the results.*
+- Techniques where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. *Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again. Note: if we decide to run metrics on variables across all trials after tuning is complete, this may skew the results.*
 
 Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks or a particular NN library coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training.
 
@@ -145,10 +145,10 @@ Because of the tuner's experiment-agnostic approach, StoRM can be even more adva
 
 Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space properly. StoRM will only be as good as the parameter space it operates on. A few things to keep in mind when parameterizing your search space...
 
-- For an ordinal value like dropout, one might decide to add a boolean parameter to unlock dropout rate. If optimization intializes to a suboptimal higher dropout value, and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minima.
+- For an ordinal value like dropout, one might decide to add a boolean parameter to unlock dropout rate. If optimization initializes to a suboptimal higher dropout value, and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minimum.
 - For ordinal parameters where it is not an option to use an additional "gateway" parameter, it is suggested to keep the amount of values under 10 and ideally around 5 for reasons explained above.
-- For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both seperately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
-- Most NN hyper parameters are not very sensitive and it is far more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependant.
+- For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both separately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
+- Most NN hyper parameters are not very sensitive and it is far more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an overabundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependent.
 
 In most cases the selection of values should be fairly intuitive...
 
@@ -160,7 +160,7 @@ kernel size: [50, 100, 200, 400]
 
 lr: [1e-2, 1e-3, 1e-4]
 
-At the end of the day there is then nothing stopping the user from re-paramterizing their search space after narrowing in on promising areas from running storm tuner at a broader scope.
+At the end of the day there is then nothing stopping the user from re-parameterizing their search space after narrowing in on promising areas from running storm tuner at a broader scope.
 
 # StoRM is library-agnostic.
 
@@ -168,7 +168,7 @@ Although the examples here use Tensorflow/Keras, StoRM works with any library or
 
 # What types of problems can StoRM be used for?
 
-StoRM should be used for optimization problems where the parameter space can be high dimensional and has many categorical/conditional variables. StoRM should also be used when parameters do not need to be optimized at very fine levels, but rather we need to find good general choices. In short, StoRM will be most effective when there are many codependant decisions to be made.
+StoRM should be used for optimization problems where the parameter space can be high dimensional and has many categorical/conditional variables. StoRM should also be used when parameters do not need to be optimized at very fine levels, but rather we need to find good general choices. In short, StoRM will be most effective when there are many codependent decisions to be made.
 
 StoRM will probably not be the best tuner to use if you are optimizing many real valued parameters that always have an affect on the target function, with low codependencies, and which can be sensitive to small changes such that we should offer the real valued spectrum of values, and not just a few bins to chose from. For these types of problems, Bayesian Optimization will still be more effective.
 
@@ -194,6 +194,3 @@ Here we can see that with 100 tuning iterations and 25 trials per each tuner, St
 ```storm scores mean: 0.6252435888846715 std: 0.012562026804848855```
 
 ```optuna scores mean: 0.6011923088630041 std: 0.011612774221843973```
-
-
-
