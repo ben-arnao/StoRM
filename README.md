@@ -126,9 +126,11 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
                  randomize_axis_factor=0.5)
 ```
 
-```init_random```: How many initial iterations to perform random search for. This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point. The more parameters there are and the higher codependency you expect, the higher you should set this number. A value anywhere between 5-25 seems reasonable in most cases. As a rule of thumb, if you set the value roughly equal to the number of parameters being modified, this should be good enough to ensure you start at a decent point.
+```init_random```: How many initial iterations to perform random search for (3 -> 10+). This is helpful for getting the search to an average/decent configuration, so that we don't waste too much time descending from a suboptimal starting point.
 
-```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter. A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases and will almost always be good enough, although for problems where you expect a large degree of parameter independance you may move the value closer to 0 and likewise for problems where you expect a great degree of parameter codependency you may set the value closer to 1 to maximize performance.
+```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter (0 -> 1). A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases and will almost always be good enough.
+
+For both of these parameters, the higher degree of parameter codependency that is expected and/or the more parameters that you are optimizing, it may be beneficial to set these values higher... ex. 10 initial random iterations, and 0.66 or 0.75 randomize acis factor.
 
 # StoRM's design goals
 
