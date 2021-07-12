@@ -299,9 +299,9 @@ class HyperParameters:
                 print('Attempting to define param \"{0}\" outside of the builder function. It is recommended to define '
                       'all params within the builder function so they are able to be flagged as active/inactive. This '
                       'is used to ensure virtually identical configurations are not tested twice.'.format(name))
-            if len(values) > 10:
-                print('Param \"{0}\" has more than 10 values ({1}). It is recommended to keep the number of potential '
-                      'values for a parameter under 10'.format(name, len(values)))
+            if len(values) > 10 and not ordered:
+                print('Ordered param \"{0}\" has more than 10 values ({1}). It is recommended to keep the number of '
+                      'potential values for an ordered parameter under 10'.format(name, len(values)))
             self.space[name] = Param(values, ordered)
             self.values[name] = random.choice(values)
         return self.values[name]  # retrieve param
