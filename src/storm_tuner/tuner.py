@@ -12,10 +12,10 @@ class Tuner:
     def __init__(self,
                  project_dir=None,
                  build_fn=None,
-                 randomize_axis_factor=0.5,
-                 init_random=10,
+                 randomize_axis_factor=0.75,
+                 init_random=5,
                  objective_direction='max',
-                 overwrite=False,
+                 overwrite=True,
                  max_iters=100,
                  seed=None):
 
@@ -50,9 +50,6 @@ class Tuner:
         else:
             self.hyperparameters = self.trials[-1].hyperparameters.copy()
 
-        # general purpose variable for user
-        self.user_var = None
-
     def _summarize_loaded_tuner(self):
         if len(self.score_history) == 0:
             print('no valid trial scores recorded yet')
@@ -79,9 +76,12 @@ class Tuner:
         print('\n-------- OPTIMIZING HYPERPARAMETERS --------\n')
         while True:
             if len(self.trials) >= self.max_iters:
-                print('tuner finished')
+                print('tuner finished {0} trials!'.format(len(self.trials)))
+                print('final best config:')
+                print(self.get_best_config())
                 break
             trial = self._create_trial()
+            trial.hyperparameters.initialized = True
             self.run_trial(trial, *args)
             self._on_trial_end(trial)
 
@@ -107,15 +107,20 @@ class Tuner:
         return bt.hyperparameters
 
     def _trial_is_new_best(self, trial):
+        if np.isnan(trial.score):
+            return False
+        if len(self.score_history) == 1:
+            return True
         if self.objective_direction == 'max':
-            return max(self.score_history) == trial.score
+            return trial.score > max(self.score_history[:-1])
         else:
-            return min(self.score_history) == trial.score
+            return trial.score < min(self.score_history[:-1])
 
     # just a method called after each trial to report the status of the tuner
     def report_trial(self, trial):
+
         # handle finding new best config
-        if not np.isnan(trial.score) and (len(self.score_history) == 0 or self._trial_is_new_best(trial)):
+        if self._trial_is_new_best(trial):
             print('<><><> NEW BEST! <><><>')
             print(self.get_best_trial().hyperparameters)
 
@@ -146,9 +151,6 @@ class Tuner:
     def _hash_active_params(self):
         self.hyperparameters.active_params = set()
         self.build_fn(self.hyperparameters)
-        for param in self.hyperparameters.values.keys():
-            if param not in self.hyperparameters.active_params:
-                del self.hyperparameters.values['param']
         param_hash = self.hyperparameters.compute_values_hash()
         return param_hash
 
@@ -260,6 +262,7 @@ class HyperParameters:
         self.space = {}
         self.values = {}
         self.active_params = set()
+        self.initialized = False
 
     def __str__(self):
         res = ''
@@ -292,8 +295,12 @@ class HyperParameters:
     def Param(self, name, values, ordered=False):
         self.active_params.add(name)  # mark param as active
         if name not in self.values or name not in self.space:  # register and randomize freshly encountered param
+            if self.initialized:
+                print('Attempting to define param \"{0}\" outside of the builder function. It is recommended to define '
+                      'all params within the builder function so they are able to be flagged as active/inactive. This '
+                      'is used to ensure virtually identical configurations are not tested twice.'.format(name))
             if len(values) > 10:
-                print('Param {0} has more than 10 values ({1}). It is recommended to keep the number of potential '
+                print('Param \"{0}\" has more than 10 values ({1}). It is recommended to keep the number of potential '
                       'values for a parameter under 10'.format(name, len(values)))
             self.space[name] = Param(values, ordered)
             self.values[name] = random.choice(values)
