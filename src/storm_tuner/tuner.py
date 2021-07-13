@@ -302,6 +302,11 @@ class HyperParameters:
             if len(values) > 10 and not ordered:
                 print('Ordered param \"{0}\" has more than 10 values ({1}). It is recommended to keep the number of '
                       'potential values for an ordered parameter under 10'.format(name, len(values)))
+                
+            # auto sort values for user in case they don't provide in sorted order
+            if ordered:
+                values.sort()
+                
             self.space[name] = Param(values, ordered)
             self.values[name] = random.choice(values)
         return self.values[name]  # retrieve param
