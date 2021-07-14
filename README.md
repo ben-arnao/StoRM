@@ -7,7 +7,7 @@ Neural network hyper parameter optimization is an especially challenging task du
 
 * Parameters can be highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you will likely have to adjust many parameters simultaneously to escape local minima. 
 
-* You may have scenarios where adjusting a parameter can completely alter the performance of other parameters as well, making it very difficult to sample historically better values more often and run the risk of sampling values based on the modeling of a suboptimal parameter space. 
+* You may have scenarios where adjusting a parameter can completely alter the performance of other parameters as well, making it difficult to sample historically better values more often due to the risk of sampling values based on the modeling of a suboptimal parameter space. 
 
 * Attempting to model which parameters are more likely to be better will also require a lot of trials to overcome this level of variance/noise. Even then, as alluded to above, the best parameter value on average will not always be the best parameter value overall. 
 
