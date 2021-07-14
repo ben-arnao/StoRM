@@ -5,15 +5,15 @@ A robust hyperparameter tuner for high-dimensional, categorically and/or conditi
 
 Neural network hyper parameter optimization is an especially challenging task due to a few different reasons:
 
-Parameters can be highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you will likely have to adjust many parameters simultaneously to escape local minima. 
+* Parameters can be highly codependent. Adjusting a single parameter may not be enough to get over a saddle point, you will likely have to adjust many parameters simultaneously to escape local minima. 
 
-You may have scenarios where adjusting a parameter can completely alter the performance of other parameters as well, making it very difficult to sample historically better values more often and run the risk of sampling values based on the modeling of a suboptimal parameter space. 
+* You may have scenarios where adjusting a parameter can completely alter the performance of other parameters as well, making it very difficult to sample historically better values more often and run the risk of sampling values based on the modeling of a suboptimal parameter space. 
 
-Attempting to model which parameters are more likely to be better will also require a lot of trials to overcome this level of variance/noise. Even then, as alluded to above, the best parameter value on average will not always be the best parameter value overall. 
+* Attempting to model which parameters are more likely to be better will also require a lot of trials to overcome this level of variance/noise. Even then, as alluded to above, the best parameter value on average will not always be the best parameter value overall. 
 
-The search space can be highly non-convex, with many categorical, discrete-valued, conditional, and nested parameters. This sort of parameter space makes it very difficult to generate any sort of quantitative probability model.
+* The search space can be highly non-convex, with many categorical, discrete-valued, conditional, and nested parameters. This sort of parameter space makes it very difficult to generate any sort of quantitative probability model.
 
-For high-end performance where local minima is not good enough and we want the best possible performance, or for domains where there has not been extensive research and there is not a general understanding on what types of choices work better than others, we might want to tune many parameters at once and the dimensionality of the search space can get very large, such that Bayesian Optimization-related methods are not very effective.
+* For high-end performance where local minima is not good enough and we want the best possible performance, or for domains where there has not been extensive research and there is not a general understanding on what types of choices work better than others, we might want to tune many parameters at once and the dimensionality of the search space can get very large, such that Bayesian Optimization-related methods are not very effective.
 
 Recent research has discussed there is not a lot of reproducible evidence that show any of today's state of the art techniques significantly beat a plain old random search with some form of early stopping- https://arxiv.org/pdf/1902.07638.pdf
 
@@ -147,10 +147,10 @@ Because of the tuner's experiment-agnostic approach, StoRM can be even more adva
 
 Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space appropriately. StoRM will only be as good as the parameter space it operates on. A few things to keep in mind when parameterizing your search space...
 
-- For a parameter with ordinal values that can also be turned completely of, such as dropout, one might consider adding an extra boolean parameter to unlock the dropout rate ordinal parameter. If optimization initializes to a suboptimal higher dropout value and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minimum.
-- For ordinal parameters where it is not an option to use an additional "gateway" parameter, it is suggested to keep the amount of values under 10 and ideally around 5 for reasons explained above.
-- For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both separately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
-- Most NN hyper parameters are not very sensitive and it is far more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an overabundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependent.
+* For a parameter with ordinal values that can also be turned completely of, such as dropout, one might consider adding an extra boolean parameter to unlock the dropout rate ordinal parameter. If optimization initializes to a suboptimal higher dropout value and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minimum.
+* For ordinal parameters where it is not an option to use an additional "gateway" parameter, it is suggested to keep the amount of values under 10 and ideally around 5 for reasons explained above.
+*  For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both separately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
+* Most NN hyper parameters are not very sensitive and it is far more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an overabundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependent.
 
 In most cases the selection of values should be fairly intuitive...
 
