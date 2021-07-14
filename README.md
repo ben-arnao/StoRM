@@ -35,11 +35,13 @@ This approach aims to address the issues stated above by allowing enough freedom
 
 Here we define our hyperparameter space by providing our own configuration building method.
 
-NOTE: The configuration building method is an important component of StoRM's functionality. Even though parameters can be accessed elsewhere, for example when the model is trained or during data preprocessing, all parameters must be defined in this method. This is because StoRM will execute this function in the background prior to the user defined execution of a trial. The reason for this is that StoRM will flag parameters that are actually drawn from and then create a hash of this particular configuration. This is a vital component as it ensures we never waste resources testing virtually identical configurations.
+**NOTE:** The configuration building method is an important component of StoRM's functionality. Even though parameters can be accessed elsewhere, for example when the model is trained or during data preprocessing, all parameters must be defined in this method. This is because StoRM will execute this function in the background prior to the user defined execution of a trial. The reason for this is that StoRM will flag parameters that are actually drawn from and then create a hash of this particular configuration. This is a vital component as it ensures we never waste resources testing virtually identical configurations.
 
-After we define our HP space, it will usually make the most sense for our function to return an untrained model at this point. However, one may opt to return more than a model in some circumstances (for example an optimizer) or they may even opt to not return anything at all and build the model later. This is entirely up to the user.
+After we define our HP space, it will usually make the most sense for our function to return an untrained model at this point. However, one may opt to return more than a model in some circumstances (for example an optimizer as well) or they may even opt to not return anything at all and build the model later. This is entirely up to the user.
 
 All parameters take the form: ```hp.Param('parameter_name', [value1, value2...], ordered=False)```. Setting a parameter to ```ordered=True```, will ensure the tuner is only able to select adjacent values per a single mutation step. This is an important feature for parameters where there is ordinality.
+
+**Let's take a look at an example of a configuration building method.**
 
 ```python
 def build_model(hp, *args):
@@ -71,6 +73,8 @@ We are required to override the ```run_trial()``` method for our own Tuner imple
 The ```self.build_fn(hp)``` function called in ```run_trial``` is what will supply us with a blank model (as mentioned above).
 
 As we can see, any arguments you provide in the ```search()``` entry method, can be accessed in your ```run_trial()``` method. This is also true for ```build_model``` as well, if any parameters need to be passed in at this scope.
+
+**Now let's take a look at an example of a run_trial method.**
 
 ```python
 from storm_tuner import Tuner
@@ -130,35 +134,37 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 
 ```randomize_axis_factor```: The main exploitative/explorative tradeoff parameter (0 -> 1). A value closer to 1 means that steps will generally have more mutations. A value closer to 0 will mean steps are more likely to only do a single mutation. A value of 0.5 seems reasonable in most cases and will almost always be good enough.
 
-NOTE: For both of these parameters, the higher degree of parameter codependency that is expected and/or the more parameters that you are optimizing, it may be beneficial to set these values higher... ex. 10 initial random iterations, and 0.66 or 0.75 randomize axis factor.
+**NOTE:** For both of these parameters, the higher degree of parameter codependency that is expected and/or the more parameters that you are optimizing, it may be beneficial to set these values higher... ex. 10 initial random iterations, and 0.66 or 0.75 randomize axis factor.
 
 # StoRM's design goals
 
 The StoRM tuner is designed to be as simple as possible. The tuner supplies a parameter configuration and the user assigns this configuration a score. We leave it up to the user to implement any number of methodologies that might fit their goals and use cases. These can include:
 
-- Techniques to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
-- Techniques where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. *Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again. Note: if we decide to run metrics on variables across all trials after tuning is complete, this may skew the results.*
+* Techniques to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
+* Techniques where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. *Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again. Note: if we decide to run metrics on variables across all trials after tuning is complete, this may skew the results.*
 
-Storm should be designed to be as generic as possible AND there is actually nothing specific to neural networks or a particular NN library coded in this project. This type of freedom also allows the user to optimize parameters used at various stages of the experiment as well, ex. data pre-processing, model architecture, and training.
+Storm is designed to be as generic as possible AND there is actually nothing specific to neural networks or a particular ML library coded in this project. This type of freedom allows the user to optimize parameters used at various stages of the experiment... data pre-processing, architecture, training, etc.
 
 Because of the tuner's experiment-agnostic approach, StoRM can be even more advantageous when used with various branches of ML that utilize NNs for the model yet have another set of hyper parameters to optimize that can make the search space even trickier and harder for traditional approaches to handle. For example, reinforcement learning.
 
 # How to get the most out of StoRM
 
-Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space appropriately. StoRM will only be as good as the parameter space it operates on. A few things to keep in mind when parameterizing your search space...
+Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space appropriately. StoRM will only be as good as the parameter space it operates on.
 
-* For a parameter with ordinal values that can also be turned completely of, such as dropout, one might consider adding an extra boolean parameter to unlock the dropout rate ordinal parameter. If optimization initializes to a suboptimal higher dropout value and dropout is not good for this particular problem, it will probably take more iterations to traverse the dropout value space than it would to turn dropout off for a configuration to escape this minimum.
+A few things to keep in mind when parameterizing your search space...
+
+* For a parameter with ordinal values that can also be turned completely off by setting the value to 0, such as dropout, weight decay, or noise, one might consider adding an extra boolean parameter to "unlock" the ordinal parameter. If optimization initializes to a suboptimal value and this feature is not good for this particular problem, it will likely take more iterations to traverse the value space than it would to simply turn the feature off for a configuration to escape this minimum.
 * For ordinal parameters where it is not an option to use an additional "gateway" parameter, it is suggested to keep the amount of values under 10 and ideally around 5 for reasons explained above.
 *  For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both separately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
-* Most NN hyper parameters are not very sensitive and it is far more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an overabundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependent.
+* Last but not least, most NN hyper parameters are not very sensitive and it is far more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependent.
 
 In most cases the selection of values should be fairly intuitive...
 
 batch size: [32, 64, 128, 256]
 
-momentum: [0.8, 0.9, 0.98]
+momentum: [1 - pow(10, -0.5), 1 - pow(10, -1), 1 - pow(10, -1.5), 1 - pow(10, -2)]
 
-kernel size: [50, 100, 200, 400]
+kernel size: [50, 100, 150, 200, 250]
 
 lr: [1e-2, 1e-3, 1e-4]
 
@@ -166,7 +172,7 @@ At the end of the day there is then nothing stopping the user from re-parameteri
 
 # StoRM is library-agnostic.
 
-Although the examples here use Tensorflow/Keras, StoRM works with any library or algorithm (sklearn, pytorch, etc.). One simply defines any parameters we are optimizing in  ```build_fn```. The user can decide to return a model right here and utilize StoRM's inline parameterization, or they can opt to use parameters in ```run_trial```.
+Although the examples here use Tensorflow/Keras, as mentioned, StoRM works with any library or algorithm (sklearn, pytorch, etc.). One simply defines any parameters we are optimizing in  ```build_fn```. The user can decide to return a model right here and utilize StoRM's inline parameterization, or they can opt to use parameters in ```run_trial```.
 
 # What types of problems can StoRM be used for?
 
@@ -196,3 +202,7 @@ Here we can see that with 100 tuning iterations and 25 trials per each tuner, St
 ```storm scores mean: 0.6252435888846715 std: 0.012562026804848855```
 
 ```optuna scores mean: 0.6011923088630041 std: 0.011612774221843973```
+
+# Contributing
+
+Benchmarking, examples, bug submissions, and PRs all welcome!
