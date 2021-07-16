@@ -81,6 +81,7 @@ class Tuner:
                 print(self.get_best_config())
                 break
             trial = self._create_trial()
+            trial.hyperparameters.remove_inactive()
             trial.hyperparameters.initialized = True
             self.run_trial(trial, *args)
             self._on_trial_end(trial)
@@ -157,6 +158,7 @@ class Tuner:
     def _draw_config(self):
         # do random configs for X user defined iters
         if len(self.score_history) < self.init_random:
+            print('random iter...')
             self._complete_random()
             param_hash = self._hash_active_params()
             while param_hash in self._tried_so_far:
@@ -273,6 +275,11 @@ class HyperParameters:
                 res += '\r\n\t' + str(param) + ' : ' + str(self.values[param])
         return res
 
+    def remove_inactive(self):
+        inactive_params = [param for param in self.values if param not in self.active_params]
+        for param in inactive_params:
+            del self.values[param]
+
     def copy(self):
         hps_copy = HyperParameters()
         hps_copy.space = copy.deepcopy(self.space)
@@ -302,7 +309,11 @@ class HyperParameters:
             if len(values) > 10 and ordered:
                 print('Ordered param \"{0}\" has more than 10 values ({1}). It is recommended to keep the number of '
                       'potential values for an ordered parameter under 10'.format(name, len(values)))
-                
+
+            # sort values just in case user did not provide in sorted order
+            if ordered:
+                values.sort()
+
             self.space[name] = Param(values, ordered)
             self.values[name] = random.choice(values)
         return self.values[name]  # retrieve param
