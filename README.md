@@ -140,7 +140,7 @@ With this tuner we have 2 main adjustable parameters to customize your search pr
 
 The StoRM tuner is designed to be as simple as possible. The tuner supplies a parameter configuration and the user assigns this configuration a score. We leave it up to the user to implement any number of methodologies that might fit their goals and use cases. These can include:
 
-* Techniques to reduce variance (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
+* Techniques to reduce the impact of variance on optimization (k-fold cross validation, trailing average of epoch loss, average of multiple trains)
 * Techniques where we might abandon training of the current model if there is a high enough certainty that this model will not beat the best score at the end of the training. *Because the tuner only cares if we beat the best score, not necessarily how much a trial lost, this means we can safely discard the configuration by just returning from our trial at this point. This will cause the trial's score to be defaulted to None so it is not tested again. Note: if we decide to run metrics on variables across all trials after tuning is complete, this may skew the results.*
 
 Storm is designed to be as generic as possible AND there is actually nothing specific to neural networks or a particular ML library coded in this project. This type of freedom allows the user to optimize parameters used at various stages of the experiment... data pre-processing, architecture, training, etc.
