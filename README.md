@@ -184,7 +184,7 @@ StoRM will probably not be the best tuner to use if you are optimizing many real
 
 A StoRM ```Trial``` like the one used in the run trial method above, has a ```metrics dictionary``` to easily allows us to store any pertinent information to this trial for review later on.
 
-# Performance
+# Benchmarking
 
 Run ```compare_to_random_search.py``` from ```examples``` directory to compare performance to random search for yourself.
 
@@ -193,15 +193,6 @@ Here we can see that over ten trials each, StoRM has a clear advantage.
 ```tuned scores mean: 0.0013418583347811364 | stdev: 0.001806810901973602```
 
 ```random scores mean: 0.010490878883283586 | stdev: 0.006145158964894091```
-
-
-Run ```compare_to_optuna.py``` from ```examples``` directory to compare performance to a state of the art optimizer like Optuna.
-
-Here we can see that with 100 tuning iterations and 25 trials per each tuner, StoRM has a slight edge and is definitely competitive.
-
-```storm scores mean: 0.6252435888846715 std: 0.012562026804848855```
-
-```optuna scores mean: 0.6011923088630041 std: 0.011612774221843973```
 
 # Contributing
 
