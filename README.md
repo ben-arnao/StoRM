@@ -1,3 +1,5 @@
+[![Downloads](https://pepy.tech/badge/storm-tuner)](https://pepy.tech/project/storm-tuner)
+
 # StoRM (Stochastic Random Mutator)
 A robust hyperparameter tuner for high-dimensional, categorically and/or conditionally-parameterized, intractable optimization problems (Ex. Neural Network)
 
