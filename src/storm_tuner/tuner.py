@@ -12,7 +12,7 @@ class Tuner:
     def __init__(self,
                  project_dir=None,
                  build_fn=None,
-                 randomize_axis_factor=0.75,
+                 randomize_axis_factor=2 / 3.0,
                  init_random=5,
                  objective_direction='max',
                  overwrite=True,
