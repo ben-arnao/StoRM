@@ -12,7 +12,7 @@ class Tuner:
     def __init__(self,
                  project_dir=None,
                  build_fn=None,
-                 randomize_axis_factor=2 / 3.0,
+                 randomize_axis_factor=0.5,
                  init_random=5,
                  objective_direction='max',
                  overwrite=True,
@@ -113,9 +113,9 @@ class Tuner:
         if len(self.score_history) == 1:
             return True
         if self.objective_direction == 'max':
-            return trial.score > max(self.score_history[:-1])
+            return max(self.trials, key=attrgetter('score')).trial_id == trial.trial_id
         else:
-            return trial.score < min(self.score_history[:-1])
+            return min(self.trials, key=attrgetter('score')).trial_id == trial.trial_id
 
     # just a method called after each trial to report the status of the tuner
     def report_trial(self, trial):
@@ -249,6 +249,9 @@ class Trial:
 
     def _recalculate_hash(self):
         self.trial_id = self.hyperparameters.compute_values_hash()
+
+    def __hash__(self):
+        return self.trial_id
 
 
 class Param:
