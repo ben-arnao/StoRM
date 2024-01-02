@@ -21,13 +21,13 @@ Recent research has discussed there is not a lot of reproducible evidence that s
 
 # How does this tuner attempt to solve these issues?
 
-All of the issues mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why this tuner opts against attempting to build some sort of surrogate function or gradient-based method to model the probability of the search space, and instead aims for something simpler and hopefully more robust to the problems we're facing. The user shouldn't expect a magic algorithm that takes the least amount of steps possible to reach global minima, but they should be able to expect something that beats brute force/random search for almost all use cases by a respectable margin, which is really what NN tuning needs at this stage.
+All of the issues mentioned above make it very difficult if not impossible to do any sort of intelligently guided search for NN architecture/training hyperparameters. That is why this tuner opts against attempting to build some sort of surrogate function or gradient-based method to model the probability of the search space, and instead aims for something simpler and hopefully more robust to the problems we're facing. The user shouldn't expect a magic algorithm that takes the least amount of steps possible to reach global minima, but they should be able to expect something that is more efficient than random search.
 
 The StoRM tuner can be thought of intuitively as a combination of a grid search combined with random search, where the "distance" between the current best configuration and the next evaluation candidate, is probability based. We randomly mutate the current best configuration along different axes (and sometimes even multiple times along the same axis). The number of mutations made for the next evaluation candidate, is based on a user-defined probability.
 
 The default value for ```randomize_axis_factor``` is 0.5 which means that there is a 50% chance just one mutation will be made. There is a 25% chance two mutations will be made. A 12.5% chance that three mutations will be made, and so on.
 
-This approach aims to address the issues stated above by allowing enough freedom so that we do respect the non-convexities of the search space and co-dependency of variables, while also probabilistically restricting how different the next evaluation candidate is from the current best, to provide some level of guidance and locality to the search.
+This approach aims to address the issues stated above by allowing enough freedom so that we do respect the complexity of the search space, while also probabilistically restricting how different the next evaluation candidate is from the current best, to provide some level of guidance and locality to the search.
 
 # Installation
 
@@ -37,7 +37,7 @@ This approach aims to address the issues stated above by allowing enough freedom
 
 Here we define our hyperparameter space by providing our own configuration building method.
 
-**NOTE:** The configuration building method is an important component of StoRM's functionality. Even though parameters can be accessed elsewhere, for example when the model is trained or during data preprocessing, all parameters must be defined in this method. This is because StoRM will execute this function in the background prior to the user defined execution of a trial. The reason for this is that StoRM will flag parameters that are actually drawn from and then create a hash of this particular configuration. This is a vital component as it ensures we never waste resources testing virtually identical configurations.
+**NOTE:** The configuration building method is an important component of StoRM's functionality. Even though parameters can be accessed elsewhere, for example when the model is trained or during data preprocessing, all parameters must be defined in this method. By executing the model building function prior to any trial execution logic, we draw a configuration based upon which parameters are actually in use, and ensure we do not waste resources testing virtually identical configurations.
 
 After we define our HP space, it will usually make the most sense for our function to return an untrained model at this point. However, one may opt to return more than a model in some circumstances (for example an optimizer as well) or they may even opt to not return anything at all and build the model later. This is entirely up to the user.
 
@@ -70,7 +70,7 @@ def build_model(hp, *args):
     return model
 ```
 
-We are required to override the ```run_trial()``` method for our own Tuner implementation, this encapsulates all the execution of a single trial. All the ```run_trial``` method needs to do is assign a score to the trial ```self.score_trial(trial, score)``` using a given parameter configuration ```trial.hyperparameters```. How the user generates a score for the configuration is entirely at their discretion.
+We are required to override the ```run_trial()``` method for our own Tuner implementation, this encapsulates all the execution of a single trial. All the ```run_trial``` method needs to do is assign a score to the trial ```self.score_trial(trial, score)``` using a given parameter configuration ```trial.hyperparameters```. How the user generates a score for the supplied configuration is entirely up to them.
 
 The ```self.build_fn(hp)``` function called in ```run_trial``` is what will supply us with a blank model (as mentioned above).
 
@@ -151,13 +151,13 @@ Because of the tuner's experiment-agnostic approach, StoRM can be even more adva
 
 # How to get the most out of StoRM
 
-Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space appropriately. StoRM will only be as good as the parameter space it operates on.
+Of course, most of the success of StoRM revolves around the user's ability to parameterize the search space appropriately. StoRM will only work as well as the parameter space it operates on.
 
 A few things to keep in mind when parameterizing your search space...
 
 * For a parameter with ordinal values that can also be turned completely off by setting the value to 0, such as dropout, weight decay, or noise, one might consider adding an extra boolean parameter to "unlock" the ordinal parameter. If optimization initializes to a suboptimal value and this feature is not good for this particular problem, it will likely take more iterations to traverse the value space than it would to simply turn the feature off for a configuration to escape this minimum.
 * For ordinal parameters where it is not an option to use an additional "gateway" parameter, it is suggested to keep the amount of values under 10 and ideally around 5 for reasons explained above.
-*  For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both separately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
+* For parameters that are coupled with one another (for example learning rate and weight decay). One might decide to parameterize weight decay as a factor of LR, instead of optimizing both separately. This way, we only search for the best step size to weight decay ratio, instead of forcing the model to try and find LR and WD values that meet at the right scale.
 * Last but not least, most NN hyper parameters are not very sensitive and it is far more important to find a good general area/scale for a parameter than it is for example to know that a learning rate of 1e-3 performs slightly better than 2e-3. We want to ensure there is a good distribution of values such that we capture the various points a parameter is commonly experimented with, yet do not have an over-abundance of ordinal values so that our tuner has to stochastically traverse this space if initialized to a poor value. StoRM leaves it up to the user to provide the appropriate binning/sampling of values (log, exp, linear, etc.) which is very parameter-dependent.
 
 In most cases the selection of values should be fairly intuitive...
